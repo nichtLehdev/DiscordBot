@@ -8,6 +8,8 @@ export async function oauthCallback(req: any, res: any) {
   // get the code from the query string
   const code = req.query.code;
 
+  console.log(code);
+
   const formData = new URLSearchParams();
   formData.append("grant_type", "authorization_code");
   formData.append("code", code as string);
