@@ -2,7 +2,7 @@ import { checkTwUserInDatabase, saveUserToDatabase } from "../database";
 
 export async function oauthCallback(req: any, res: any) {
   if (!req.query.code) {
-    res.send("Error: No code found in query string");
+    res.status(400).send("Error: No code found in query string");
     return;
   }
   // get the code from the query string
@@ -29,14 +29,16 @@ export async function oauthCallback(req: any, res: any) {
   });
 
   if (!response) {
-    res.send("Error: No response from OAuth2 server");
+    res.status(400).send("Error: No response from OAuth2 server");
     return;
   }
 
   const json = await response.json();
 
   if (!json) {
-    res.send("Error: No JSON response from OAuth2 server");
+    res
+      .status(response.status)
+      .send("Error: No JSON response from OAuth2 server");
     return;
   }
 
@@ -50,7 +52,9 @@ export async function oauthCallback(req: any, res: any) {
   };
 
   if (!access_token || !refresh_token || !expires_in) {
-    res.send("Error: Missing access token, refresh token or expires in");
+    res
+      .status(response.status)
+      .send("Error: Missing access token, refresh token or expires in");
     return;
   }
   const userResponse = await fetch(process.env.TW_API_URL + "/auth/user", {
@@ -63,14 +67,14 @@ export async function oauthCallback(req: any, res: any) {
   const userJson = await userResponse.json();
 
   if (!userJson) {
-    res.send("Error: No JSON response from user endpoint");
+    res.status(400).send("Error: No JSON response from user endpoint");
     return;
   }
 
   const user = userJson.data;
 
   if (user.id === undefined) {
-    res.send("Error: No user ID found in response");
+    res.status(400).send("Error: No user ID found in response");
     return;
   }
 
@@ -78,9 +82,11 @@ export async function oauthCallback(req: any, res: any) {
   const userExists = await checkTwUserInDatabase(user.id);
 
   if (userExists) {
-    res.send(
-      "Looks like you're already registered! Please contact an admin if you need help.\nA new API Token and Webhook have been granted by Traewelling. Please revoke these in the Traewelling settings."
-    );
+    res
+      .status(403)
+      .send(
+        "Looks like you're already registered! Please contact an admin if you need help.\nA new API Token and Webhook have been granted by Traewelling. Please revoke these in the Traewelling settings."
+      );
   }
 
   const dbUser: User = {
@@ -98,8 +104,10 @@ export async function oauthCallback(req: any, res: any) {
 
   await saveUserToDatabase(dbUser);
 
-  res.send(
-    "User registered successfully! Please copy this number and send it to the bot: " +
-      user.id
-  );
+  res
+    .status(200)
+    .send(
+      "User registered successfully! Please copy this number and send it to the bot: " +
+        user.id
+    );
 }
