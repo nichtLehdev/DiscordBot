@@ -28,6 +28,13 @@ export async function oauthCallback(req: any, res: any) {
     body: formData.toString(),
   });
 
+  if (!response) {
+    res.send("Error: No response from OAuth2 server");
+    return;
+  }
+
+  console.log(response);
+
   const json = await response.json();
 
   if (!json) {
