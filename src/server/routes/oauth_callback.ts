@@ -1,4 +1,4 @@
-import { saveUserToDatabase } from "../database";
+import { checkTwUserInDatabase, saveUserToDatabase } from "../database";
 
 export async function oauthCallback(req: any, res: any) {
   if (!req.query.code) {
@@ -74,6 +74,15 @@ export async function oauthCallback(req: any, res: any) {
   if (user.id === undefined) {
     res.send("Error: No user ID found in response");
     return;
+  }
+
+  // check if user is already in the database
+  const userExists = await checkTwUserInDatabase(user.id);
+
+  if (userExists) {
+    res.send(
+      "Looks like you're already registered! Please contact an admin if you need help.\nA new API Token and Webhook have been granted by Traewelling. Please revoke these in the Traewelling settings."
+    );
   }
 
   const dbUser: User = {
