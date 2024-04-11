@@ -53,6 +53,8 @@ export async function oauthCallback(req: any, res: any) {
     return;
   }
 
+  console.log(userJson);
+
   const user = userJson.data;
 
   if (user.id === undefined) {
