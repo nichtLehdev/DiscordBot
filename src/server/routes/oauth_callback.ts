@@ -67,8 +67,6 @@ export async function oauthCallback(req: any, res: any) {
     return;
   }
 
-  console.log(userJson);
-
   const user = userJson.data;
 
   if (user.id === undefined) {
@@ -101,7 +99,7 @@ export async function oauthCallback(req: any, res: any) {
   await saveUserToDatabase(dbUser);
 
   res.send(
-    "User registered successfully! Please copy this message and send it to the bot: " +
+    "User registered successfully! Please copy this number and send it to the bot: " +
       user.id
   );
 }
