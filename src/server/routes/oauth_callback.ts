@@ -39,6 +39,13 @@ export async function oauthCallback(req: any, res: any) {
   const refresh_token = json.refresh_token;
   const expires_in = json.expires_in;
 
+  if (!access_token || !refresh_token || !expires_in) {
+    res.send("Error: Missing access token, refresh token or expires in");
+    return;
+  }
+
+  console.log(json);
+
   const userResponse = await fetch(process.env.TW_API_URL + "/auth/user", {
     headers: {
       Authorization: "Bearer " + access_token,
