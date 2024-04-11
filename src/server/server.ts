@@ -2,9 +2,10 @@
 import express from "express";
 import "../bot/bot";
 import { oauthCallback } from "./routes/oauth_callback";
+import "dotenv/config";
 
 const app = express();
-const port = 3000;
+const port = process.env.PORT || 3000;
 
 app.use(express.json());
 

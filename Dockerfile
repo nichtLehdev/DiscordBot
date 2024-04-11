@@ -10,6 +10,7 @@ RUN npm install
 
 # Bundle app source
 COPY ./dist .
+COPY ./.env ./.env
 
-EXPOSE 80
-CMD [ "node", "server.js" ]
+EXPOSE 29420
+CMD [ "node", "server/server.js" ]
