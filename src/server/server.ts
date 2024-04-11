@@ -9,8 +9,11 @@ const port = process.env.PORT || 3000;
 
 app.use(express.json());
 
-app.get("/oauth_callback", (req, res) => {
+app.get("/traewelling/oauth_callback", (req, res) => {
   oauthCallback(req, res);
+});
+app.get("/traewelling/callback", (req, res) => {
+  res.send("Hello World!");
 });
 
 app.listen(port, () => {

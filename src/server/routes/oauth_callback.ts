@@ -1,6 +1,10 @@
 import { saveUserToDatabase } from "../database";
 
 export async function oauthCallback(req: any, res: any) {
+  if (!req.query.code) {
+    res.send("Error: No code found in query string");
+    return;
+  }
   // get the code from the query string
   const code = req.query.code;
 
