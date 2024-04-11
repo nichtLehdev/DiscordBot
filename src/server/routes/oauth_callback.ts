@@ -8,8 +8,6 @@ export async function oauthCallback(req: any, res: any) {
   // get the code from the query string
   const code = req.query.code;
 
-  console.log(code);
-
   const formData = new URLSearchParams();
   formData.append("grant_type", "authorization_code");
   formData.append("code", code as string);
@@ -35,8 +33,6 @@ export async function oauthCallback(req: any, res: any) {
     return;
   }
 
-  console.log(response);
-
   const json = await response.json();
 
   if (!json) {
@@ -47,14 +43,16 @@ export async function oauthCallback(req: any, res: any) {
   const access_token = json.access_token;
   const refresh_token = json.refresh_token;
   const expires_in = json.expires_in;
+  const webhook = json.webhook as {
+    id: number;
+    url: string;
+    secret: string;
+  };
 
   if (!access_token || !refresh_token || !expires_in) {
     res.send("Error: Missing access token, refresh token or expires in");
     return;
   }
-
-  console.log(json);
-
   const userResponse = await fetch(process.env.TW_API_URL + "/auth/user", {
     headers: {
       Authorization: "Bearer " + access_token,
@@ -86,9 +84,9 @@ export async function oauthCallback(req: any, res: any) {
     access_token: access_token,
     refresh_token: refresh_token,
     valid_until: new Date(Date.now() + expires_in * 1000),
-    webhook_secret: "",
-    webhook_id: 0,
-    webhook_url: process.env.TW_WEBHOOK_URL!,
+    webhook_secret: webhook.secret,
+    webhook_id: webhook.id,
+    webhook_url: webhook.url,
   };
 
   await saveUserToDatabase(dbUser);

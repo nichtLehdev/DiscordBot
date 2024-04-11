@@ -11,6 +11,9 @@ export async function saveUserToDatabase(user: User): Promise<void> {
     password: process.env.DB_PASSWORD,
   });
 
+  console.log("Trying to save user to database...");
+  console.log(user);
+
   await connection.execute(
     "INSERT INTO traewelling_users (id, display_name, name, access_token, refresh_token, valid_until, webhook_secret, webhook_id, webhook_url) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
     [
