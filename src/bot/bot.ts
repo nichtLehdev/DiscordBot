@@ -94,7 +94,7 @@ client.on("interactionCreate", async (interaction: Interaction) => {
         client_id: process.env.TW_CLIENT_ID!,
         redirect_uri: process.env.TW_REDIRECT_URI!,
         scope: "read-statuses",
-        trwl_webhook_url: process.env.TW_WEBHOOK_URL! + "/api/bot/webhook",
+        trwl_webhook_url: process.env.TW_WEBHOOK_URL!,
         trwl_webhook_events:
           "checkin_create,checkin_update,checkin_delete,notification",
       });
