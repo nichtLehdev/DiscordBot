@@ -79,8 +79,8 @@ export async function oauthCallback(req: any, res: any) {
   const dbUser: User = {
     id: user.id,
     dc_id: null,
-    display_name: user.display_name,
-    name: user.name,
+    display_name: user.displayName,
+    name: user.username,
     access_token: access_token,
     refresh_token: refresh_token,
     valid_until: new Date(Date.now() + expires_in * 1000),
