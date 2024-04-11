@@ -12,7 +12,16 @@ export async function saveUserToDatabase(user: User): Promise<void> {
   });
 
   console.log("Trying to save user to database...");
-  console.log(user);
+
+  const userDb = await connection.query(
+    "SELECT id FROM traewelling_users WHERE id = ?",
+    [user.id]
+  );
+
+  if (userDb.length > 0) {
+    console.log("User already exists in database");
+    return;
+  }
 
   await connection.execute(
     "INSERT INTO traewelling_users (id, display_name, name, access_token, refresh_token, valid_until, webhook_secret, webhook_id, webhook_url) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
