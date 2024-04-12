@@ -78,7 +78,8 @@ async function user(interaction: ChatInputCommandInteraction) {
       response_type: "code",
       client_id: process.env.TW_CLIENT_ID!,
       redirect_uri: process.env.TW_REDIRECT_URI!,
-      scope: "read-statuses",
+      scope:
+        "write-likes read-statuses read-notifications write-notifications write-followers",
       trwl_webhook_url: process.env.TW_WEBHOOK_URL!,
       trwl_webhook_events:
         "checkin_create,checkin_update,checkin_delete,notification",
@@ -110,6 +111,9 @@ async function user(interaction: ChatInputCommandInteraction) {
         if (userExistsTw) {
           // get user dc_id and save it in the database
           saveDiscordIdToDatabase(interaction.user.id, Number(id));
+          await interaction.user.send(
+            "Registration successful. You can now use the /traewelling profile command."
+          );
         }
       }
     }
