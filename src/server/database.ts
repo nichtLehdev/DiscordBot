@@ -18,6 +18,8 @@ export async function saveUserToDatabase(user: User): Promise<void> {
     [user.id]
   );
 
+  console.log(userDb);
+
   if (userDb.length > 0) {
     console.log("User already exists in database");
     return;
