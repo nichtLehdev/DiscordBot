@@ -13,15 +13,13 @@ export async function saveUserToDatabase(user: User): Promise<void> {
 
   console.log("Trying to save user to database...");
 
-  const userDb = await connection.query(
-    "SELECT id FROM traewelling_users WHERE id = ?",
+  const [userDb] = await connection.execute<UserRow[]>(
+    "SELECT * FROM traewelling_users WHERE id = ?",
     [user.id]
   );
 
-  console.log(userDb);
-
   if (userDb.length > 0) {
-    console.log("User already exists in database");
+    console.log("User already exists in database. Aborting...");
     return;
   }
 
