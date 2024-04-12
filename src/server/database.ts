@@ -139,3 +139,25 @@ export async function getUserByDiscordId(userId: string) {
 
   return null;
 }
+
+export async function getUserByTraewellingId(userId: number) {
+  const connection = await mysql.createConnection({
+    host: process.env.DB_HOST,
+    user: process.env.DB_USER,
+    database: process.env.DB_DATABASE,
+    password: process.env.DB_PASSWORD,
+  });
+
+  const [rows] = await connection.execute<UserRow[]>(
+    "SELECT * FROM traewelling_users WHERE id = ?",
+    [userId]
+  );
+  await connection.end();
+
+  if (rows.length > 0) {
+    const row = rows[0];
+    return row;
+  }
+
+  return null;
+}

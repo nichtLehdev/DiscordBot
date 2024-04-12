@@ -1,6 +1,7 @@
-import { checkTwUserInDatabase, saveUserToDatabase } from "../database";
+import { Request, Response } from "express";
+import { checkTwUserInDatabase, saveUserToDatabase } from "../../database";
 
-export async function oauthCallback(req: any, res: any) {
+export async function oauthCallback(req: Request, res: Response) {
   if (!req.query.code) {
     res.status(400).send("Error: No code found in query string");
     return;

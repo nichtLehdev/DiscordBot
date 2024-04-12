@@ -5,12 +5,18 @@ import "dotenv/config";
 
 const commands = [
   new SlashCommandBuilder()
-    .setName("user")
-    .setDescription("Get user data from the database or register a new user"),
-  new SlashCommandBuilder().setName("ping").setDescription("Ping!"),
-  new SlashCommandBuilder()
-    .setName("users")
-    .setDescription("List of users in the database"),
+    .setName("traewelling")
+    .setDescription("Traewelling commands")
+    .addSubcommand((subcommand) =>
+      subcommand
+        .setName("profile")
+        .setDescription("Get your traewelling profile")
+    )
+    .addSubcommand((subcommand) =>
+      subcommand
+        .setName("users")
+        .setDescription("Get all users in the database")
+    ),
 ].map((command) => command.toJSON());
 
 const rest = new REST({ version: "10" }).setToken(process.env.DISCORD_TOKEN!);
