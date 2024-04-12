@@ -1,5 +1,13 @@
 // src/bot.ts
-import { Client, GatewayIntentBits, Interaction, Partials } from "discord.js";
+import {
+  Channel,
+  ChatInputCommandInteraction,
+  Client,
+  EmbedBuilder,
+  GatewayIntentBits,
+  Interaction,
+  Partials,
+} from "discord.js";
 import "dotenv/config";
 import { traewelling_cmd } from "./commands/traewelling";
 
@@ -7,6 +15,7 @@ const client = new Client({
   intents: [
     GatewayIntentBits.Guilds,
     GatewayIntentBits.GuildMessages,
+    GatewayIntentBits.GuildMembers,
     GatewayIntentBits.DirectMessages,
     GatewayIntentBits.GuildMessageReactions,
   ],
@@ -15,6 +24,48 @@ const client = new Client({
 
 client.once("ready", () => {
   console.log(`Logged in as ${client.user?.tag}!`);
+});
+
+export const sendEmbedWithReactions = async (
+  channelId: string,
+  embed: EmbedBuilder,
+  message: string,
+  reactions: string[]
+) => {
+  const channel = await client.channels.fetch(channelId);
+
+  if (!channel?.isTextBased()) return;
+
+  const msg = await channel.send({ embeds: [embed], content: message });
+  for (const reaction of reactions) {
+    await msg.react(reaction);
+  }
+};
+
+client.on("guildCreate", async (guild) => {
+  console.log(`Joined a new guild: ${guild.name}`);
+
+  try {
+    if (!client.user) return; // This really wouldn't make sense, but typescript is complaining
+    const botMember = await guild.members.fetch(client.user.id);
+    if (botMember) {
+      console.log(`Bot's display name in this guild: ${botMember.displayName}`);
+
+      // Check for specific permissions
+      if (
+        guild.systemChannel &&
+        botMember.permissionsIn(guild.systemChannel).has("SendMessages")
+      ) {
+        await guild.systemChannel.send(
+          "Hello! Thanks for adding me to your server!\n" +
+            "To get started, use the `/register` command to register the bot.\n" +
+            "You need to be an admin to do this."
+        );
+      }
+    }
+  } catch (error) {
+    console.error(`Error fetching bot member in ${guild.name}:`, error);
+  }
 });
 
 client.on("interactionCreate", async (interaction: Interaction) => {
@@ -38,6 +89,10 @@ client.on("messageReactionAdd", async (reaction, user) => {
       );
 
       if (botReaction) {
+        // Add your logic here
+        console.log(
+          `User ${user.tag} reacted with ${reaction.emoji.name} to the message with id ${reaction.message.id}`
+        );
       }
     }
   }

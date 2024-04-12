@@ -1,6 +1,7 @@
 import { Request, Response } from "express";
 import { getUserByTraewellingId } from "../../database";
 import { createHmac } from "crypto";
+import { sendEmbedWithReactions } from "../../../bot/bot";
 
 async function validate(req: Request, res: Response) {
   const { body, headers } = req;
@@ -68,14 +69,15 @@ async function validate(req: Request, res: Response) {
   return true;
 }
 
-async function handleCheckinCreate(status: TW_Status) {
+async function handleCheckinCreate(status: TW_Status, res: Response) {
   const user = await getUserByTraewellingId(status.user);
   if (!user) {
+    res.status(404).send("Error: User not found in the database"); // 404 Not Found
     return;
   }
 
   // do something with the status
-  console.log(status);
+  console.log("New Status for user", user.display_name, status);
 }
 
 export async function webhookReceived(req: Request, res: Response) {
@@ -90,6 +92,6 @@ export async function webhookReceived(req: Request, res: Response) {
   const event = body.event;
   if (event === "checkin_create") {
     const status = body.status as TW_Status;
-    handleCheckinCreate(status);
+    handleCheckinCreate(status, res);
   }
 }
