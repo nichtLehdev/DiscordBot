@@ -83,7 +83,8 @@ export const sendCheckInEmbeds = async (status: TW_Status) => {
       `Sending to server ${relation.server_id} in channel ${server.channel_id}`
     );
     const guild = await client.guilds.fetch(relation.server_id);
-    const channel = await guild.channels.fetch(relation.channel_id);
+    const channel = await guild.channels.fetch(server.channel_id);
+
     if (!channel) {
       continue;
     }
