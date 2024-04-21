@@ -140,7 +140,6 @@ export async function createCheckInEmbed(status: TW_Status): Promise<{
       iconURL: status.profilePicture,
       url: `https://traewelling.de/@${status.username}`,
     })
-    .setDescription(status.body.length > 0 ? status.body : "")
     .setFooter({
       text: `Status #${status.id}`,
       iconURL: "https://traewelling.de/images/icons/touch-icon-ipad-retina.png",
@@ -180,6 +179,10 @@ export async function createCheckInEmbed(status: TW_Status): Promise<{
         inline: true,
       },
     ]);
+
+  if (status.body.length > 0) {
+    embed.setDescription(status.body);
+  }
 
   if (imageBuffer) {
     embed.setImage("attachment://route.png");
