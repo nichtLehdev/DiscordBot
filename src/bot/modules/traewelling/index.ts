@@ -24,14 +24,7 @@ async function createRouteImage(status: TW_Status): Promise<Buffer | null> {
 
     console.log(status);
 
-    const stops: StopOver[] = trip.stopovers!.map((stop: StopOver) => {
-      return {
-        name: stop.stop?.name,
-        arrival: stop.arrival,
-        departure: stop.departure,
-      };
-    });
-
+    const stops = trip.stopovers as StopOver[];
     console.log(stops);
 
     // find stop where user started the trip by name and planned departure
