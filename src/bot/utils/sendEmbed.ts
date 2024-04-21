@@ -19,6 +19,7 @@ export async function sendEmbedToChannel(
   message: string,
   attachment: AttachmentBuilder | null
 ) {
+  console.log("Sending embed to channel");
   if (attachment) {
     await channel.send({
       embeds: [embed],
