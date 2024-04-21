@@ -8,90 +8,95 @@ import { StopOver } from "hafas-client";
 import StaticMaps from "staticmaps";
 import dayjs from "dayjs";
 
-async function createRouteImage(status: TW_Status): Promise<Buffer> {
-  const trip = await fetch(
-    "https://v6.db.transport.rest/trips/" +
-      status.train.hafasId +
-      "?stopovers=True"
-  ).then((res) => res.json());
+async function createRouteImage(status: TW_Status): Promise<Buffer | null> {
+  try {
+    const trip = await fetch(
+      "https://v6.db.transport.rest/trips/" +
+        status.train.hafasId +
+        "?stopovers=true"
+    ).then((res) => res.json());
 
-  if (!trip) {
-    throw new Error("No trip found");
+    if (!trip) {
+      throw new Error("No trip found");
+    }
+
+    const stops: StopOver[] = trip.stopovers.map((stop: StopOver) => {
+      return {
+        name: stop.stop?.name,
+        arrival: stop.arrival,
+        departure: stop.departure,
+      };
+    });
+
+    // find stop where user started the trip by name and planned departure
+    const start = stops.find(
+      (stop: StopOver) =>
+        stop.stop?.name === status.train.origin.name &&
+        stop.plannedDeparture === status.train.origin.departurePlanned
+    );
+
+    // find stop where user ended the trip by name and planned arrival
+    const end = stops.find(
+      (stop: StopOver) =>
+        stop.stop?.name === status.train.destination.name &&
+        stop.plannedArrival === status.train.destination.arrivalPlanned
+    );
+
+    if (!start || !end) {
+      throw new Error("Start or end stop not found");
+    }
+
+    // get the index of the start and end stop
+    const startIndex = stops.indexOf(start);
+    const endIndex = stops.indexOf(end);
+
+    // get the stops between the start and end stop
+    const route = stops.slice(startIndex, endIndex + 1);
+
+    let brouterQuery = "";
+    for (const stop of route) {
+      brouterQuery += `${stop.stop?.location?.longitude},${stop.stop?.location?.latitude}|`;
+    }
+
+    // remove the last pipe
+    brouterQuery = brouterQuery.slice(0, -1);
+
+    // Get Route
+    const routeData = await fetch(
+      "https://brouter.de/brouter?profile=rail&alternativeidx=0&format=geojson&lonlats=" +
+        brouterQuery
+    ).then((res) => res.json());
+
+    if (routeData.features.length === 0) {
+      throw new Error("No route found");
+    }
+
+    const geoData = routeData.features[0].geometry.coordinates;
+
+    const map = new StaticMaps({
+      width: 600,
+      height: 400,
+    });
+
+    map.addPolygon({
+      coords: geoData,
+      color: "#c72730BB",
+      width: 5,
+    });
+
+    const image = await map.render();
+    const imageBuffer = await map.image.buffer("image/png");
+
+    return imageBuffer;
+  } catch (err) {
+    console.error(err);
+    return null;
   }
-
-  const stops: StopOver[] = trip.stopovers.map((stop: StopOver) => {
-    return {
-      name: stop.stop?.name,
-      arrival: stop.arrival,
-      departure: stop.departure,
-    };
-  });
-
-  // find stop where user started the trip by name and planned departure
-  const start = stops.find(
-    (stop: StopOver) =>
-      stop.stop?.name === status.train.origin.name &&
-      stop.plannedDeparture === status.train.origin.departurePlanned
-  );
-
-  // find stop where user ended the trip by name and planned arrival
-  const end = stops.find(
-    (stop: StopOver) =>
-      stop.stop?.name === status.train.destination.name &&
-      stop.plannedArrival === status.train.destination.arrivalPlanned
-  );
-
-  if (!start || !end) {
-    throw new Error("Start or end stop not found");
-  }
-
-  // get the index of the start and end stop
-  const startIndex = stops.indexOf(start);
-  const endIndex = stops.indexOf(end);
-
-  // get the stops between the start and end stop
-  const route = stops.slice(startIndex, endIndex + 1);
-
-  let brouterQuery = "";
-  for (const stop of route) {
-    brouterQuery += `${stop.stop?.location?.longitude},${stop.stop?.location?.latitude}|`;
-  }
-
-  // remove the last pipe
-  brouterQuery = brouterQuery.slice(0, -1);
-
-  // Get Route
-  const routeData = await fetch(
-    "https://brouter.de/brouter?profile=rail&alternativeidx=0&format=geojson&lonlats=" +
-      brouterQuery
-  ).then((res) => res.json());
-
-  if (routeData.features.length === 0) {
-    throw new Error("No route found");
-  }
-
-  const geoData = routeData.features[0].geometry.coordinates;
-
-  const map = new StaticMaps({
-    width: 600,
-    height: 400,
-  });
-
-  map.addPolygon({
-    coords: geoData,
-    color: "#c72730BB",
-    width: 5,
-  });
-
-  const image = await map.render();
-  const imageBuffer = await map.image.buffer("image/png");
-
-  return imageBuffer;
 }
 
 export async function createCheckInEmbed(status: TW_Status): Promise<{
   embed: EmbedBuilder;
-  imageBuffer: Buffer;
+  imageBuffer: Buffer | null;
 }> {
   // get user from database
   const user = await getUserByTraewellingId(status.user);
@@ -120,7 +125,6 @@ export async function createCheckInEmbed(status: TW_Status): Promise<{
       url: `https://traewelling.de/@${status.username}`,
     })
     .setDescription(status.body.length > 0 ? status.body : "")
-    .setImage("attachment://route.png")
     .setFooter({
       text: `Status #${status.id}`,
       iconURL: "https://traewelling.de/images/icons/touch-icon-ipad-retina.png",
@@ -160,6 +164,10 @@ export async function createCheckInEmbed(status: TW_Status): Promise<{
         inline: true,
       },
     ]);
+
+  if (imageBuffer) {
+    embed.setImage("attachment://route.png");
+  }
 
   return { embed, imageBuffer };
 }

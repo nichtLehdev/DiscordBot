@@ -62,8 +62,10 @@ export const sendCheckInEmbeds = async (status: TW_Status) => {
 
   // get the check-in embed
   const { embed, imageBuffer } = await createCheckInEmbed(status);
-  const attachment = new AttachmentBuilder(imageBuffer).setName("map.png");
-
+  let attachment: AttachmentBuilder | null = null;
+  if (imageBuffer) {
+    attachment = new AttachmentBuilder(imageBuffer).setName("route.png");
+  }
   // send the embed to all servers/channels
   for (const relation of relations) {
     const guild = await client.guilds.fetch(relation.server_id);

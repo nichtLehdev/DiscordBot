@@ -21,15 +21,19 @@ export async function sendEmbedToChannel(
   channel: Channel,
   embed: EmbedBuilder,
   message: string,
-  attachment: AttachmentBuilder
+  attachment: AttachmentBuilder | null
 ) {
   if (!channel?.isTextBased()) return;
 
   if (!(await client.channels.fetch(channel.id))) return;
 
-  await (channel as TextChannel).send({
-    embeds: [embed],
-    content: message,
-    files: [attachment],
-  });
+  if (attachment) {
+    await (channel as TextChannel).send({
+      embeds: [embed],
+      content: message,
+      files: [attachment],
+    });
+  } else {
+    await (channel as TextChannel).send({ embeds: [embed], content: message });
+  }
 }
