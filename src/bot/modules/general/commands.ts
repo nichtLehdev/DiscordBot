@@ -2,8 +2,8 @@ import { ChatInputCommandInteraction, PermissionsBitField } from "discord.js";
 import {
   addServerToDatabase,
   checkServerInDatabase,
-} from "../../database/server";
-import { ServerRow } from "../../types/database";
+} from "../../../database/server";
+import { ServerRow } from "../../../types/database";
 
 export async function register_cmd(interaction: ChatInputCommandInteraction) {
   // get channel id from command options

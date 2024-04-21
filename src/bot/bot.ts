@@ -1,5 +1,6 @@
 // src/bot.ts
 import {
+  AttachmentBuilder,
   Client,
   EmbedBuilder,
   GatewayIntentBits,
@@ -7,8 +8,12 @@ import {
   Partials,
 } from "discord.js";
 import "dotenv/config";
-import { traewelling_cmd } from "./commands/traewelling";
-import { register_cmd } from "./commands/general";
+import { traewelling_cmd } from "./modules/traewelling/commands";
+import { register_cmd } from "./modules/general/commands";
+import { getUserByTraewellingId } from "../database/user";
+import { getRelationsByUserId } from "../database/server";
+import { createCheckInEmbed } from "./modules/traewelling";
+import { sendEmbedToChannel } from "./utils/sendEmbed";
 
 const client = new Client({
   intents: [
@@ -38,6 +43,58 @@ export const sendEmbedWithReactions = async (
   const msg = await channel.send({ embeds: [embed], content: message });
   for (const reaction of reactions) {
     await msg.react(reaction);
+  }
+};
+
+export const sendCheckInEmbeds = async (status: TW_Status) => {
+  // get all relations with the given user_id
+  const user = await getUserByTraewellingId(status.user);
+  if (!user) {
+    return;
+  }
+
+  if (!user.dc_id) {
+    console.log("User has no discord id");
+    return;
+  }
+
+  const relations = await getRelationsByUserId(user.dc_id);
+
+  // get the check-in embed
+  const { embed, imageBuffer } = await createCheckInEmbed(status);
+  const attachment = new AttachmentBuilder(imageBuffer).setName("map.png");
+
+  // send the embed to all servers/channels
+  for (const relation of relations) {
+    const guild = await client.guilds.fetch(relation.server_id);
+    const channel = await guild.channels.fetch(relation.channel_id);
+    if (!channel) {
+      continue;
+    }
+
+    // check status visibility
+    const visibility = status.visibility; // 0: public, 1: unlisted, 2: followers, 3: private, 4: authenticated
+    switch (visibility) {
+      case 1:
+        if (!relation.unlisted) {
+          continue;
+        }
+        break;
+      case 2:
+        if (!relation.followers) {
+          continue;
+        }
+        break;
+      case 3:
+        if (!relation.private) {
+          continue;
+        }
+        break;
+      default:
+        break;
+    }
+    const msg = `<@${user.dc_id}> has posted a new check-in!`;
+    await sendEmbedToChannel(client, channel, embed, msg, attachment);
   }
 };
 

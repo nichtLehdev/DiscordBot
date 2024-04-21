@@ -5,13 +5,13 @@ import {
   checkTwUserInDatabase,
   saveDiscordIdToDatabase,
   getUsers,
-} from "../../database/user";
+} from "../../../database/user";
 import {
   checkRelationInDatabase,
   checkServerInDatabase,
   createRelationInDatabase,
   updateRelationInDatabase,
-} from "../../database/server";
+} from "../../../database/server";
 
 export async function traewelling_cmd(
   interaction: ChatInputCommandInteraction

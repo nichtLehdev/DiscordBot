@@ -125,3 +125,13 @@ export async function updateRelationInDatabase(
 
   await connection.end();
 }
+
+export async function getRelationsByUserId(userId: string) {
+  const connection = await getConnection();
+  const [rows] = await connection.execute<UserServerRelationRow[]>(
+    "SELECT * FROM traewelling_user_server_relations WHERE user_id = ?",
+    [userId]
+  );
+  await connection.end();
+  return rows;
+}

@@ -13,14 +13,18 @@
   "license": "ISC",
   "dependencies": {
     "@discordjs/rest": "^2.2.0",
+    "@types/hafas-client": "^6.2.0",
+    "dayjs": "^1.11.10",
     "discord.js": "^14.14.1",
     "dotenv": "^16.4.5",
     "express": "^4.19.2",
-    "mysql2": "^3.9.4"
+    "mysql2": "^3.9.4",
+    "staticmaps": "^1.13.1"
   },
   "devDependencies": {
     "@types/express": "^4.17.21",
     "@types/node": "^20.12.7",
+    "@types/staticmaps": "^1.12.5",
     "ts-node": "^10.9.2",
     "typescript": "^5.4.4"
   }

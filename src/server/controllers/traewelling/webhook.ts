@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
 import { createHmac } from "crypto";
-import { sendEmbedWithReactions } from "../../../bot/bot";
+import { sendCheckInEmbeds, sendEmbedWithReactions } from "../../../bot/bot";
 import { getUserByTraewellingId } from "../../../database/user";
 
 async function validate(req: Request, res: Response) {
@@ -77,7 +77,8 @@ async function handleCheckinCreate(status: TW_Status, res: Response) {
   }
 
   // do something with the status
-  console.log("New Status for user", user.display_name, status);
+  console.log("New Status for user", user.display_name);
+  sendCheckInEmbeds(status);
 }
 
 export async function webhookReceived(req: Request, res: Response) {

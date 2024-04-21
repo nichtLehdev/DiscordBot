@@ -69,6 +69,7 @@ type TW_Status = {
   liked: boolean;
   isLikable: boolean;
   createdAt: string;
+  profilePicture: string;
   train: {
     trip: number;
     hafasId: string;
