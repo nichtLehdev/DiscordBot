@@ -25,9 +25,13 @@ async function createRouteImage(status: TW_Status): Promise<Buffer | null> {
     console.log(status);
 
     const stops = trip.stopovers as StopOver[];
+
     console.log(stops);
 
     // find stop where user started the trip by name and planned departure
+    console.log(
+      `Trying to find ${status.train.origin.name} at ${status.train.origin.departurePlanned} in stops`
+    );
     const start = stops.find(
       (stop: StopOver) =>
         stop.stop?.name === status.train.origin.name &&
@@ -37,6 +41,9 @@ async function createRouteImage(status: TW_Status): Promise<Buffer | null> {
     console.log(start);
 
     // find stop where user ended the trip by name and planned arrival
+    console.log(
+      `Trying to find ${status.train.destination.name} at ${status.train.destination.arrivalPlanned} in stops`
+    );
     const end = stops.find(
       (stop: StopOver) =>
         stop.stop?.name === status.train.destination.name &&
