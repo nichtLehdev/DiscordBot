@@ -4,23 +4,25 @@
 
 import { Embed, EmbedBuilder } from "discord.js";
 import { getUserByTraewellingId } from "../../../database/user";
-import { StopOver } from "hafas-client";
+import { StopOver, Trip } from "hafas-client";
 import StaticMaps from "staticmaps";
 import dayjs from "dayjs";
 
 async function createRouteImage(status: TW_Status): Promise<Buffer | null> {
   try {
-    const trip = await fetch(
+    const res = await fetch(
       "https://v6.db.transport.rest/trips/" +
         status.train.hafasId +
         "?stopovers=true"
     ).then((res) => res.json());
 
+    const trip = res.trip as Trip;
+
     if (!trip) {
       throw new Error("No trip found");
     }
 
-    const stops: StopOver[] = trip.stopovers.map((stop: StopOver) => {
+    const stops: StopOver[] = trip.stopovers!.map((stop: StopOver) => {
       return {
         name: stop.stop?.name,
         arrival: stop.arrival,
