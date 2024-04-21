@@ -23,7 +23,7 @@ export async function sendEmbedToChannel(
   message: string,
   attachment: AttachmentBuilder | null
 ) {
-  if (!channel?.isTextBased()) return;
+  if (!channel.isTextBased()) return;
 
   if (!(await client.channels.fetch(channel.id))) return;
 
