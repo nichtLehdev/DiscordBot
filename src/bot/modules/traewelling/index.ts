@@ -35,7 +35,10 @@ async function createRouteImage(status: TW_Status): Promise<Buffer | null> {
     const start = stops.find(
       (stop: StopOver) =>
         stop.stop?.name === status.train.origin.name &&
-        stop.plannedDeparture === status.train.origin.departurePlanned
+        dayjs(stop.plannedDeparture).format("YYYY-MM-DDTHH:mm:ss") ===
+          dayjs(status.train.origin.departurePlanned).format(
+            "YYYY-MM-DDTHH:mm:ss"
+          )
     );
 
     console.log(start);
@@ -47,7 +50,10 @@ async function createRouteImage(status: TW_Status): Promise<Buffer | null> {
     const end = stops.find(
       (stop: StopOver) =>
         stop.stop?.name === status.train.destination.name &&
-        stop.plannedArrival === status.train.destination.arrivalPlanned
+        dayjs(stop.plannedArrival).format("YYYY-MM-DDTHH:mm:ss") ===
+          dayjs(status.train.destination.arrivalPlanned).format(
+            "YYYY-MM-DDTHH:mm:ss"
+          )
     );
 
     console.log(end);
