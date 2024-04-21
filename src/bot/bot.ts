@@ -12,7 +12,7 @@ import "dotenv/config";
 import { traewelling_cmd } from "./modules/traewelling/commands";
 import { register_cmd } from "./modules/general/commands";
 import { getUserByTraewellingId } from "../database/user";
-import { getRelationsByUserId } from "../database/server";
+import { getSendRelationsByUserId } from "../database/server";
 import { createCheckInEmbed } from "./modules/traewelling";
 import { sendEmbedToChannel } from "./utils/sendEmbed";
 
@@ -59,7 +59,8 @@ export const sendCheckInEmbeds = async (status: TW_Status) => {
     return;
   }
 
-  const relations = await getRelationsByUserId(user.dc_id);
+  const relations = await getSendRelationsByUserId(user.dc_id);
+  console.log(`User ${user.display_name} has ${relations.length} relations`);
 
   // get the check-in embed
   const { embed, imageBuffer } = await createCheckInEmbed(status);
@@ -69,6 +70,9 @@ export const sendCheckInEmbeds = async (status: TW_Status) => {
   }
   // send the embed to all servers/channels
   for (const relation of relations) {
+    console.log(
+      `Sending to server ${relation.server_id} in channel ${relation.channel_id}`
+    );
     const guild = await client.guilds.fetch(relation.server_id);
     const channel = await guild.channels.fetch(relation.channel_id);
     if (!channel) {
@@ -100,7 +104,7 @@ export const sendCheckInEmbeds = async (status: TW_Status) => {
         break;
     }
     const msg = `<@${user.dc_id}> has posted a new check-in!`;
-    await sendEmbedToChannel(client, channel, embed, msg, attachment);
+    await sendEmbedToChannel(channel, embed, msg, attachment);
   }
 };
 

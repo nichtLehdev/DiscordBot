@@ -126,10 +126,10 @@ export async function updateRelationInDatabase(
   await connection.end();
 }
 
-export async function getRelationsByUserId(userId: string) {
+export async function getSendRelationsByUserId(userId: string) {
   const connection = await getConnection();
   const [rows] = await connection.execute<UserServerRelationRow[]>(
-    "SELECT * FROM traewelling_user_server_relations WHERE user_id = ?",
+    "SELECT * FROM traewelling_user_server_relations WHERE user_id = ? AND send = 1",
     [userId]
   );
   await connection.end();
