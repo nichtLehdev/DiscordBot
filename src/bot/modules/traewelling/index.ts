@@ -91,6 +91,7 @@ async function createRouteImage(status: TW_Status): Promise<Buffer | null> {
       width: 5,
     });
 
+    await map.render();
     const imageBuffer = await map.image.buffer("image/png");
 
     return imageBuffer;
