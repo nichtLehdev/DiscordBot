@@ -1,6 +1,7 @@
 // src/bot.ts
 import {
   AttachmentBuilder,
+  ChannelType,
   Client,
   EmbedBuilder,
   GatewayIntentBits,
@@ -38,7 +39,7 @@ export const sendEmbedWithReactions = async (
 ) => {
   const channel = await client.channels.fetch(channelId);
 
-  if (!channel?.isTextBased()) return;
+  if (channel?.type != ChannelType.GuildText) return;
 
   const msg = await channel.send({ embeds: [embed], content: message });
   for (const reaction of reactions) {
@@ -74,6 +75,9 @@ export const sendCheckInEmbeds = async (status: TW_Status) => {
       continue;
     }
 
+    if (channel.type != ChannelType.GuildText) {
+      continue;
+    }
     // check status visibility
     const visibility = status.visibility; // 0: public, 1: unlisted, 2: followers, 3: private, 4: authenticated
     switch (visibility) {
