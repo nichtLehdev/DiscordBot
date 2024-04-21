@@ -12,7 +12,10 @@ import "dotenv/config";
 import { traewelling_cmd } from "./modules/traewelling/commands";
 import { register_cmd } from "./modules/general/commands";
 import { getUserByTraewellingId } from "../database/user";
-import { getSendRelationsByUserId } from "../database/server";
+import {
+  checkServerInDatabase,
+  getSendRelationsByUserId,
+} from "../database/server";
 import { createCheckInEmbed } from "./modules/traewelling";
 import { sendEmbedToChannel } from "./utils/sendEmbed";
 
@@ -70,8 +73,14 @@ export const sendCheckInEmbeds = async (status: TW_Status) => {
   }
   // send the embed to all servers/channels
   for (const relation of relations) {
+    // get channel
+    const server = await checkServerInDatabase(relation.server_id);
+    if (typeof server === "boolean") {
+      continue;
+    }
+
     console.log(
-      `Sending to server ${relation.server_id} in channel ${relation.channel_id}`
+      `Sending to server ${relation.server_id} in channel ${server.channel_id}`
     );
     const guild = await client.guilds.fetch(relation.server_id);
     const channel = await guild.channels.fetch(relation.channel_id);
