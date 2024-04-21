@@ -78,8 +78,9 @@ async function handleCheckinCreate(status: TW_Status, res: Response) {
 
   // do something with the status
   console.log("New Status for user", user.display_name);
-  await sendCheckInEmbeds(status);
+  sendCheckInEmbeds(status);
   res.status(200).send("OK"); // 200 OK
+  return;
 }
 
 export async function webhookReceived(req: Request, res: Response) {
