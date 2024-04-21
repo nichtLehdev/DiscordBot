@@ -22,6 +22,8 @@ async function createRouteImage(status: TW_Status): Promise<Buffer | null> {
       throw new Error("No trip found");
     }
 
+    console.log(status);
+
     const stops: StopOver[] = trip.stopovers!.map((stop: StopOver) => {
       return {
         name: stop.stop?.name,
@@ -30,6 +32,8 @@ async function createRouteImage(status: TW_Status): Promise<Buffer | null> {
       };
     });
 
+    console.log(stops);
+
     // find stop where user started the trip by name and planned departure
     const start = stops.find(
       (stop: StopOver) =>
@@ -37,12 +41,16 @@ async function createRouteImage(status: TW_Status): Promise<Buffer | null> {
         stop.plannedDeparture === status.train.origin.departurePlanned
     );
 
+    console.log(start);
+
     // find stop where user ended the trip by name and planned arrival
     const end = stops.find(
       (stop: StopOver) =>
         stop.stop?.name === status.train.destination.name &&
         stop.plannedArrival === status.train.destination.arrivalPlanned
     );
+
+    console.log(end);
 
     if (!start || !end) {
       throw new Error("Start or end stop not found");
