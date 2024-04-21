@@ -1,28 +1,20 @@
 import mysql, { RowDataPacket } from "mysql2/promise";
-import "dotenv/config";
+import { getConnection } from ".";
+import { UserRow, User } from "../types/database";
 
-type UserRow = RowDataPacket & User; // Adjust according to your schema
+// Adjust according to your schema
 
 export async function saveUserToDatabase(user: User): Promise<void> {
-  const connection = await mysql.createConnection({
-    host: process.env.DB_HOST,
-    user: process.env.DB_USER,
-    database: process.env.DB_DATABASE,
-    password: process.env.DB_PASSWORD,
-  });
-
+  const connection = await getConnection();
   console.log("Trying to save user to database...");
-
   const [userDb] = await connection.execute<UserRow[]>(
     "SELECT * FROM traewelling_users WHERE id = ?",
     [user.id]
   );
-
   if (userDb.length > 0) {
     console.log("User already exists in database. Aborting...");
     return;
   }
-
   await connection.execute(
     "INSERT INTO traewelling_users (id, display_name, name, access_token, refresh_token, valid_until, webhook_secret, webhook_id, webhook_url) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
     [
@@ -42,51 +34,33 @@ export async function saveUserToDatabase(user: User): Promise<void> {
 
 export async function checkDiscordUserInDatabase(
   userId: string
-): Promise<boolean> {
-  const connection = await mysql.createConnection({
-    host: process.env.DB_HOST,
-    user: process.env.DB_USER,
-    database: process.env.DB_DATABASE,
-    password: process.env.DB_PASSWORD,
-  });
-
+): Promise<boolean | UserRow> {
+  const connection = await getConnection();
   const [rows] = await connection.execute<UserRow[]>(
     "SELECT * FROM traewelling_users WHERE dc_id = ?",
     [userId]
   );
   await connection.end();
-
-  return rows.length > 0;
+  return rows.length > 0 ? rows[0] : false;
 }
 
-export async function checkTwUserInDatabase(userId: number): Promise<boolean> {
-  const connection = await mysql.createConnection({
-    host: process.env.DB_HOST,
-    user: process.env.DB_USER,
-    database: process.env.DB_DATABASE,
-    password: process.env.DB_PASSWORD,
-  });
-
+export async function checkTwUserInDatabase(
+  userId: number
+): Promise<boolean | UserRow> {
+  const connection = await getConnection();
   const [rows] = await connection.execute<UserRow[]>(
     "SELECT * FROM traewelling_users WHERE id = ?",
     [userId]
   );
   await connection.end();
-
-  return rows.length > 0;
+  return rows.length > 0 ? rows[0] : false;
 }
 
 export async function saveDiscordIdToDatabase(
   userId: string,
   twId: number
 ): Promise<void> {
-  const connection = await mysql.createConnection({
-    host: process.env.DB_HOST,
-    user: process.env.DB_USER,
-    database: process.env.DB_DATABASE,
-    password: process.env.DB_PASSWORD,
-  });
-
+  const connection = await getConnection();
   await connection.execute(
     "UPDATE traewelling_users SET dc_id = ? WHERE id = ?",
     [userId, twId]
@@ -95,18 +69,11 @@ export async function saveDiscordIdToDatabase(
 }
 
 export async function getUsers() {
-  const connection = await mysql.createConnection({
-    host: process.env.DB_HOST,
-    user: process.env.DB_USER,
-    database: process.env.DB_DATABASE,
-    password: process.env.DB_PASSWORD,
-  });
-
+  const connection = await getConnection();
   const [rows] = await connection.execute<UserRow[]>(
     "SELECT * FROM traewelling_users"
   );
   await connection.end();
-
   const users = rows.map((row) => {
     return {
       id: row.id,
@@ -114,50 +81,33 @@ export async function getUsers() {
       display_name: row.display_name,
     };
   });
-
   return users;
 }
 
 export async function getUserByDiscordId(userId: string) {
-  const connection = await mysql.createConnection({
-    host: process.env.DB_HOST,
-    user: process.env.DB_USER,
-    database: process.env.DB_DATABASE,
-    password: process.env.DB_PASSWORD,
-  });
-
+  const connection = await getConnection();
   const [rows] = await connection.execute<UserRow[]>(
     "SELECT * FROM traewelling_users WHERE dc_id = ?",
     [userId]
   );
   await connection.end();
-
   if (rows.length > 0) {
     const row = rows[0];
     return row;
   }
-
   return null;
 }
 
 export async function getUserByTraewellingId(userId: number) {
-  const connection = await mysql.createConnection({
-    host: process.env.DB_HOST,
-    user: process.env.DB_USER,
-    database: process.env.DB_DATABASE,
-    password: process.env.DB_PASSWORD,
-  });
-
+  const connection = await getConnection();
   const [rows] = await connection.execute<UserRow[]>(
     "SELECT * FROM traewelling_users WHERE id = ?",
     [userId]
   );
   await connection.end();
-
   if (rows.length > 0) {
     const row = rows[0];
     return row;
   }
-
   return null;
 }

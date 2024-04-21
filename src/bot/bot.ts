@@ -1,7 +1,5 @@
 // src/bot.ts
 import {
-  Channel,
-  ChatInputCommandInteraction,
   Client,
   EmbedBuilder,
   GatewayIntentBits,
@@ -10,6 +8,7 @@ import {
 } from "discord.js";
 import "dotenv/config";
 import { traewelling_cmd } from "./commands/traewelling";
+import { register_cmd } from "./commands/general";
 
 const client = new Client({
   intents: [
@@ -72,7 +71,9 @@ client.on("interactionCreate", async (interaction: Interaction) => {
   if (!interaction.isChatInputCommand()) return;
 
   if (interaction.commandName === "traewelling") {
-    traewelling_cmd(interaction);
+    await traewelling_cmd(interaction);
+  } else if (interaction.commandName === "register") {
+    await register_cmd(interaction);
   }
 });
 

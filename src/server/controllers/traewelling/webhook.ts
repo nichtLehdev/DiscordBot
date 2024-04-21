@@ -1,7 +1,7 @@
 import { Request, Response } from "express";
-import { getUserByTraewellingId } from "../../database";
 import { createHmac } from "crypto";
 import { sendEmbedWithReactions } from "../../../bot/bot";
+import { getUserByTraewellingId } from "../../../database/user";
 
 async function validate(req: Request, res: Response) {
   const { body, headers } = req;

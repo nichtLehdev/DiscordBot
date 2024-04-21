@@ -5,17 +5,28 @@ import {
   checkTwUserInDatabase,
   saveDiscordIdToDatabase,
   getUsers,
-} from "../../server/database";
+} from "../../database/user";
+import {
+  checkRelationInDatabase,
+  checkServerInDatabase,
+  createRelationInDatabase,
+  updateRelationInDatabase,
+} from "../../database/server";
 
-export function traewelling_cmd(interaction: ChatInputCommandInteraction) {
+export async function traewelling_cmd(
+  interaction: ChatInputCommandInteraction
+) {
   const subcommand = interaction.options.getSubcommand();
 
   switch (subcommand) {
     case "profile":
-      user(interaction);
+      await user(interaction);
       break;
     case "users":
-      users(interaction);
+      await users(interaction);
+      break;
+    case "checkins":
+      await registerUser(interaction);
       break;
   }
 }
@@ -69,6 +80,7 @@ async function user(interaction: ChatInputCommandInteraction) {
       ]);
 
     await interaction.reply({ embeds: [embed] });
+    return;
   } else {
     await interaction.reply(
       "Sorry, user not found in the database. Please register first. \nPlease check your DMs for more information."
@@ -133,4 +145,57 @@ async function users(interaction: ChatInputCommandInteraction) {
     );
 
   await interaction.reply({ embeds: [embed] });
+}
+
+async function registerUser(interaction: ChatInputCommandInteraction) {
+  const user = await checkDiscordUserInDatabase(interaction.user.id);
+  if (typeof user === "boolean") {
+    await interaction.reply(
+      "Error: You are not yet registered. Please use the `/traewelling profile` and follow the instructions to register."
+    );
+    return;
+  }
+
+  const server = await checkServerInDatabase(interaction.guildId || "");
+  if (typeof server === "boolean") {
+    await interaction.reply(
+      "Error: Server not registered. Please use the `/register` command to register the bot. If you are not an admin, please ask an admin to do it for you."
+    );
+    return;
+  }
+
+  // User and Server are both registered in the database
+  // Save the relationship between the user and the server
+
+  // get options from the command
+  const send = interaction.options.getBoolean("send", true);
+  const unlisted = interaction.options.getBoolean("unlisted", false);
+  const followers = interaction.options.getBoolean("followers-only", false);
+  const pvt = interaction.options.getBoolean("private", false);
+
+  // check if a relationship already exists
+  const relationship = await checkRelationInDatabase(
+    user.dc_id!,
+    server.server_id
+  );
+
+  if (typeof relationship === "boolean") {
+    // create a new relationship
+    await createRelationInDatabase(user.dc_id!, server.server_id, {
+      send,
+      unlisted: unlisted || false,
+      followers: followers || false,
+      private: pvt || false,
+    });
+    await interaction.reply("User registered successfully");
+  } else {
+    // update the relationship
+    await updateRelationInDatabase(relationship.id, {
+      send,
+      unlisted: unlisted || relationship.unlisted,
+      followers: followers || relationship.followers,
+      pvt: pvt || relationship.private,
+    });
+    await interaction.reply("Permissions updated successfully");
+  }
 }

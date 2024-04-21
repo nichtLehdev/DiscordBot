@@ -1,5 +1,9 @@
 import { Request, Response } from "express";
-import { checkTwUserInDatabase, saveUserToDatabase } from "../../database";
+import {
+  checkTwUserInDatabase,
+  saveUserToDatabase,
+} from "../../../database/user";
+import { User } from "../../../types/database";
 
 export async function oauthCallback(req: Request, res: Response) {
   if (!req.query.code) {
