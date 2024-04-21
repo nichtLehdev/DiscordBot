@@ -140,7 +140,7 @@ export async function createCheckInEmbed(status: TW_Status): Promise<{
     .addFields([
       {
         name: "Distance",
-        value: `${(status.train.distance / 1000).toLocaleString()} km`,
+        value: `${(status.train.distance / 1000).toLocaleString("de-DE")} km`,
         inline: true,
       },
       {
