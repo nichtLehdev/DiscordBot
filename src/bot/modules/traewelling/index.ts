@@ -113,6 +113,9 @@ export async function createCheckInEmbed(status: TW_Status): Promise<{
 
   const imageBuffer = await createRouteImage(status);
 
+  const plannedDeparture = dayjs(status.train.origin.departurePlanned).unix();
+  const plannedArrival = dayjs(status.train.destination.arrivalPlanned).unix();
+
   const departureDelay = dayjs(status.train.origin.departureReal).diff(
     dayjs(status.train.origin.departurePlanned),
     "minute"
@@ -148,17 +151,15 @@ export async function createCheckInEmbed(status: TW_Status): Promise<{
       {
         name: "Departure",
         value:
-          dayjs(status.train.origin.departurePlanned).format(
-            "DD.MM.YYYY HH:mm"
-          ) + (departureDelay > 0 ? ` (+${departureDelay} min)` : ""),
+          `<t:${plannedDeparture}:t>` +
+          (departureDelay > 0 ? ` (+${departureDelay} min)` : ""),
         inline: true,
       },
       {
         name: "Arrival",
         value:
-          dayjs(status.train.destination.arrivalPlanned).format(
-            "DD.MM.YYYY HH:mm"
-          ) + (arrivalDelay > 0 ? ` (+${arrivalDelay} min)` : ""),
+          `<t:${plannedArrival}:t>` +
+          (arrivalDelay > 0 ? ` (+${arrivalDelay} min)` : ""),
         inline: true,
       },
       {
