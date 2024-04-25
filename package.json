@@ -18,7 +18,7 @@
     "discord.js": "^14.14.1",
     "dotenv": "^16.4.5",
     "express": "^4.19.2",
-    "mysql2": "^3.9.4",
+    "mysql2": "^3.9.7",
     "staticmaps": "^1.13.1"
   },
   "devDependencies": {
