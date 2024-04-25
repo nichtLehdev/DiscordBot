@@ -97,4 +97,7 @@ export async function webhookReceived(req: Request, res: Response) {
     const status = body.status as TW_Status;
     handleCheckinCreate(status, res);
   }
+
+  console.log("Received webhook event: ", event);
+  console.log("Body: ", body);
 }
