@@ -96,10 +96,6 @@ async function handleNotification(
   userId: string,
   res: Response
 ) {
-  console.log("Notification received: ", notification);
-
-  console.log("User ID: ", userId);
-
   if (!userId) {
     res.status(400).send("Error: No user id found in headers"); // 400 Bad Request
     return;
