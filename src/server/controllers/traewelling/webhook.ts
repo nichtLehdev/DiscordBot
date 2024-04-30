@@ -163,6 +163,7 @@ export async function webhookReceived(req: Request, res: Response) {
     handleCheckinCreate(status, res);
   }
   if (event === "notification") {
+    console.log("Notification received, headers: ", headers);
     const notification = body.notification as TW_Notification;
     handleNotification(notification, headers["x-trwl-user-id"] as string, res);
   }
