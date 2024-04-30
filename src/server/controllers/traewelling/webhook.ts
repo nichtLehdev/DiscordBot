@@ -96,6 +96,15 @@ async function handleNotification(
   userId: string,
   res: Response
 ) {
+  console.log("Notification received: ", notification);
+
+  console.log("User ID: ", userId);
+
+  if (!userId) {
+    res.status(400).send("Error: No user id found in headers"); // 400 Bad Request
+    return;
+  }
+
   const user = await getUserByTraewellingId(parseInt(userId));
   if (!user) {
     res.status(404).send("Error: User not found in the database"); // 404 Not Found
@@ -163,7 +172,6 @@ export async function webhookReceived(req: Request, res: Response) {
     handleCheckinCreate(status, res);
   }
   if (event === "notification") {
-    console.log("Notification received, headers: ", headers);
     const notification = body.notification as TW_Notification;
     handleNotification(notification, headers["x-trwl-user-id"] as string, res);
   }
