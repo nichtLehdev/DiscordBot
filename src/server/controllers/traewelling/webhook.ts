@@ -115,7 +115,7 @@ async function handleNotification(
       const data = notification.data as TW_LikeData;
       const liker = await checkTwUserInDatabase(data.liker.id);
       const embed = new EmbedBuilder()
-        .setTitle(`New Like on a status of <@${user.dc_id}>`)
+        .setTitle(`New Like on a status of ${user.display_name}`)
         .setColor("Yellow")
         .setAuthor({
           name: user.display_name,
@@ -125,7 +125,7 @@ async function handleNotification(
         .addFields([
           {
             name: "Trip",
-            value: `[${data.trip.origin.name} ➔ ${data.trip.destination.name} | ${data.trip.lineName} of <@${user.dc_id}>](https://traewelling.de/status/${data.status.id})`,
+            value: `${data.trip.origin.name} ➔ ${data.trip.destination.name} | ${data.trip.lineName} of <@${user.dc_id}>`,
           },
         ])
         .setFooter({
