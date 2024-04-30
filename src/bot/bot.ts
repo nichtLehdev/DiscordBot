@@ -56,7 +56,7 @@ export const sendEmbedWithReactions = async (
 
 export async function sendTraewellingEmbed(embed: EmbedBuilder, user: UserRow) {
   // check for user in database
-  const userCheck = await checkTwUserInDatabase(user.tw_id);
+  const userCheck = await checkTwUserInDatabase(user.id);
   if (typeof userCheck === "boolean") {
     return;
   }
