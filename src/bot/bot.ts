@@ -11,13 +11,17 @@ import {
 import "dotenv/config";
 import { traewelling_cmd } from "./modules/traewelling/commands";
 import { register_cmd } from "./modules/general/commands";
-import { getUserByTraewellingId } from "../database/user";
+import {
+  checkTwUserInDatabase,
+  getUserByTraewellingId,
+} from "../database/user";
 import {
   checkServerInDatabase,
   getSendRelationsByUserId,
 } from "../database/server";
 import { createCheckInEmbed } from "./modules/traewelling";
 import { sendEmbedToChannel } from "./utils/sendEmbed";
+import { UserRow } from "../types/database";
 
 const client = new Client({
   intents: [
@@ -49,6 +53,48 @@ export const sendEmbedWithReactions = async (
     await msg.react(reaction);
   }
 };
+
+export async function sendTraewellingEmbed(embed: EmbedBuilder, user: UserRow) {
+  // check for user in database
+  const userCheck = await checkTwUserInDatabase(user.tw_id);
+  if (typeof userCheck === "boolean") {
+    return;
+  }
+
+  if (!user.dc_id) {
+    console.log("User has no discord id");
+    return;
+  }
+
+  // get all relations with the given user_id
+  const relations = await getSendRelationsByUserId(user.dc_id);
+  console.log(`User ${user.display_name} has ${relations.length} relations`);
+
+  // send the embed to all servers/channels
+  for (const relation of relations) {
+    // get channel
+    const server = await checkServerInDatabase(relation.server_id);
+    if (typeof server === "boolean") {
+      continue;
+    }
+
+    console.log(
+      `Sending to server ${relation.server_id} in channel ${server.channel_id}`
+    );
+    const guild = await client.guilds.fetch(relation.server_id);
+    const channel = await guild.channels.fetch(server.channel_id);
+
+    if (!channel) {
+      continue;
+    }
+
+    if (channel.type != ChannelType.GuildText) {
+      continue;
+    }
+
+    await channel.send({ embeds: [embed] });
+  }
+}
 
 export const sendCheckInEmbeds = async (status: TW_Status) => {
   // get all relations with the given user_id

@@ -1,7 +1,16 @@
 import { Request, Response } from "express";
 import { createHmac } from "crypto";
-import { sendCheckInEmbeds, sendEmbedWithReactions } from "../../../bot/bot";
-import { getUserByTraewellingId } from "../../../database/user";
+import {
+  sendCheckInEmbeds,
+  sendEmbedWithReactions,
+  sendTraewellingEmbed,
+} from "../../../bot/bot";
+import {
+  checkTwUserInDatabase,
+  getUserByTraewellingId,
+} from "../../../database/user";
+import { EmbedBuilder } from "discord.js";
+import dayjs from "dayjs";
 
 async function validate(req: Request, res: Response) {
   const { body, headers } = req;
@@ -82,6 +91,63 @@ async function handleCheckinCreate(status: TW_Status, res: Response) {
   return;
 }
 
+async function handleNotification(
+  notification: TW_Notification,
+  userId: string,
+  res: Response
+) {
+  const user = await getUserByTraewellingId(parseInt(userId));
+  if (!user) {
+    res.status(404).send("Error: User not found in the database"); // 404 Not Found
+    return;
+  }
+
+  // do something with the notification
+  console.log("New Notification for user", user.display_name);
+
+  switch (notification.type) {
+    case "StatusLiked":
+      const data = notification.data as TW_LikeData;
+      const liker = await checkTwUserInDatabase(data.liker.id);
+      const embed = new EmbedBuilder()
+        .setTitle(`New Like on a status of <@${user.dc_id}>`)
+        .setColor("Yellow")
+        .setAuthor({
+          name: user.display_name,
+          iconURL: user.avatar_url,
+        })
+        .setTimestamp(dayjs(notification.createdAt).toDate())
+        .addFields([
+          {
+            name: "Trip",
+            value: `[${data.trip.origin.name} ➔ ${data.trip.destination.name} | ${data.trip.lineName} of <@${user.dc_id}>](https://traewelling.de/status/${data.status.id})`,
+          },
+        ])
+        .setFooter({
+          text: `Status #${data.status.id}`,
+          iconURL:
+            "https://traewelling.de/images/icons/touch-icon-ipad-retina.png",
+        });
+
+      if (typeof liker === "boolean") {
+        // liker is not in the database
+        if (notification.lead) {
+          embed.setDescription(notification.lead);
+        } else {
+          embed.setDescription("Someone liked your status");
+        }
+      } else {
+        if (liker.dc_id) {
+          embed.setDescription(`<@${liker.dc_id}> liked your status`);
+        }
+      }
+      await sendTraewellingEmbed(embed, user);
+      break;
+    default:
+      break;
+  }
+}
+
 export async function webhookReceived(req: Request, res: Response) {
   const body = req.body;
   const headers = req.headers;
@@ -95,6 +161,10 @@ export async function webhookReceived(req: Request, res: Response) {
   if (event === "checkin_create") {
     const status = body.status as TW_Status;
     handleCheckinCreate(status, res);
+  }
+  if (event === "notification") {
+    const notification = body.notification as TW_Notification;
+    handleNotification(notification, headers["x-trwl-user-id"] as string, res);
   }
 
   console.log("Received webhook event: ", event);

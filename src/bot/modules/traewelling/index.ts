@@ -2,7 +2,7 @@
  * that have a user-server-relation with the given user_id
  */
 
-import { Embed, EmbedBuilder } from "discord.js";
+import { EmbedBuilder } from "discord.js";
 import { getUserByTraewellingId } from "../../../database/user";
 import { StopOver, Trip } from "hafas-client";
 import StaticMaps from "staticmaps";
