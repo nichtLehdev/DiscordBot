@@ -1,6 +1,10 @@
 import { RowDataPacket } from "mysql2/promise";
 import { getConnection } from ".";
-import { ServerRow, UserServerRelationRow } from "../types/database";
+import {
+  CheckinServerRelationRow,
+  ServerRow,
+  UserServerRelationRow,
+} from "../types/database";
 
 export async function checkServerInDatabase(
   serverId: string
@@ -131,6 +135,16 @@ export async function getSendRelationsByUserId(userId: string) {
   const [rows] = await connection.execute<UserServerRelationRow[]>(
     "SELECT * FROM traewelling_user_server_relations WHERE user_id = ? AND send = 1",
     [userId]
+  );
+  await connection.end();
+  return rows;
+}
+
+export async function getCheckinRelationsById(checkinId: number) {
+  const connection = await getConnection();
+  const [rows] = await connection.execute<CheckinServerRelationRow[]>(
+    "SElECT * FROM traewelling_checkin_server_relations WHERE checkin_id = ?",
+    [checkinId]
   );
   await connection.end();
   return rows;

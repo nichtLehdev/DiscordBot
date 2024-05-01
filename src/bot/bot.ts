@@ -22,6 +22,7 @@ import {
 import { createCheckInEmbed } from "./modules/traewelling";
 import { sendEmbedToChannel } from "./utils/sendEmbed";
 import { UserRow } from "../types/database";
+import { addCheckin, addCheckinRelation } from "../database/checkin";
 
 const client = new Client({
   intents: [
@@ -54,7 +55,11 @@ export const sendEmbedWithReactions = async (
   }
 };
 
-export async function sendTraewellingEmbed(embed: EmbedBuilder, user: UserRow) {
+export async function sendTraewellingEmbed(
+  embed: EmbedBuilder,
+  user: UserRow,
+  message: string
+) {
   // check for user in database
   const userCheck = await checkTwUserInDatabase(user.id);
   if (typeof userCheck === "boolean") {
@@ -91,8 +96,9 @@ export async function sendTraewellingEmbed(embed: EmbedBuilder, user: UserRow) {
     if (channel.type != ChannelType.GuildText) {
       continue;
     }
+    if (message == "") return await channel.send({ embeds: [embed] });
 
-    await channel.send({ embeds: [embed] });
+    return await channel.send({ embeds: [embed], content: message });
   }
 }
 
@@ -117,6 +123,10 @@ export const sendCheckInEmbeds = async (status: TW_Status) => {
   if (imageBuffer) {
     attachment = new AttachmentBuilder(imageBuffer).setName("route.png");
   }
+
+  // store checkin in db
+  await addCheckin(status);
+
   // send the embed to all servers/channels
   for (const relation of relations) {
     // get channel
@@ -160,7 +170,9 @@ export const sendCheckInEmbeds = async (status: TW_Status) => {
         break;
     }
     const msg = `<@${user.dc_id}> has posted a new check-in!`;
-    await sendEmbedToChannel(channel, embed, msg, attachment);
+    const msgObj = await sendEmbedToChannel(channel, embed, msg, attachment);
+
+    await addCheckinRelation(status.id, relation.server_id, msgObj.id);
   }
 };
 

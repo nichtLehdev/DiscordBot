@@ -2,6 +2,7 @@ import {
   AttachmentBuilder,
   ChatInputCommandInteraction,
   EmbedBuilder,
+  Message,
   TextChannel,
 } from "discord.js";
 
@@ -20,13 +21,14 @@ export async function sendEmbedToChannel(
   attachment: AttachmentBuilder | null
 ) {
   console.log("Sending embed to channel");
+  let dcMsg: Message<true>;
   if (attachment) {
-    await channel.send({
+    return await channel.send({
       embeds: [embed],
       content: message,
       files: [attachment],
     });
   } else {
-    await channel.send({ embeds: [embed], content: message });
+    return await channel.send({ embeds: [embed], content: message });
   }
 }

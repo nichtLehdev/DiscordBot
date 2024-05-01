@@ -1,10 +1,6 @@
 import { Request, Response } from "express";
 import { createHmac } from "crypto";
-import {
-  sendCheckInEmbeds,
-  sendEmbedWithReactions,
-  sendTraewellingEmbed,
-} from "../../../bot/bot";
+import { sendCheckInEmbeds, sendTraewellingEmbed } from "../../../bot/bot";
 import {
   checkTwUserInDatabase,
   getUserByTraewellingId,
@@ -79,15 +75,15 @@ async function validate(req: Request, res: Response) {
 }
 
 async function handleCheckinCreate(status: TW_Status, res: Response) {
-  const user = await getUserByTraewellingId(status.user);
-  if (!user) {
-    res.status(404).send("Error: User not found in the database"); // 404 Not Found
+  const user = await checkTwUserInDatabase(status.user);
+  if (typeof user === "boolean") {
+    res.status(404).send("User not found");
     return;
   }
 
   // do something with the status
   console.log("New Status for user", user.display_name);
-  sendCheckInEmbeds(status);
+  await sendCheckInEmbeds(status);
   return;
 }
 
@@ -146,7 +142,7 @@ async function handleNotification(
           embed.setDescription(`<@${liker.dc_id}> liked your status`);
         }
       }
-      await sendTraewellingEmbed(embed, user);
+      await sendTraewellingEmbed(embed, user, "");
       break;
     default:
       break;
@@ -163,17 +159,21 @@ export async function webhookReceived(req: Request, res: Response) {
   }
 */
   const event = body.event;
-  if (event === "checkin_create") {
-    const status = body.status as TW_Status;
-    handleCheckinCreate(status, res);
+  switch (event) {
+    case "checkin_create":
+      handleCheckinCreate(body.status as TW_Status, res);
+      break;
+    case "notification":
+      handleNotification(
+        body.notification as TW_Notification,
+        headers["x-trwl-user-id"] as string,
+        res
+      );
+      break;
+    default:
+      console.log("Received webhook event: ", event);
+      console.log("Body: ", body);
+      break;
   }
-  if (event === "notification") {
-    const notification = body.notification as TW_Notification;
-    handleNotification(notification, headers["x-trwl-user-id"] as string, res);
-  }
-
-  console.log("Received webhook event: ", event);
-  console.log("Body: ", body);
-
   res.status(200).send("OK");
 }
