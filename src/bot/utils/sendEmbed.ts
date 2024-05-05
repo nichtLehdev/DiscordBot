@@ -21,7 +21,6 @@ export async function sendEmbedToChannel(
   attachment: AttachmentBuilder | null
 ) {
   console.log("Sending embed to channel");
-  let dcMsg: Message<true>;
   if (attachment) {
     return await channel.send({
       embeds: [embed],
