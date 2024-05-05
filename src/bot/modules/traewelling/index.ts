@@ -2,7 +2,7 @@
  * that have a user-server-relation with the given user_id
  */
 
-import { Embed, EmbedBuilder } from "discord.js";
+import { EmbedBuilder } from "discord.js";
 import { getUserByTraewellingId } from "../../../database/user";
 import { StopOver, Trip } from "hafas-client";
 import StaticMaps from "staticmaps";
@@ -113,6 +113,9 @@ export async function createCheckInEmbed(status: TW_Status): Promise<{
 
   const imageBuffer = await createRouteImage(status);
 
+  const plannedDeparture = dayjs(status.train.origin.departurePlanned).unix();
+  const plannedArrival = dayjs(status.train.destination.arrivalPlanned).unix();
+
   const departureDelay = dayjs(status.train.origin.departureReal).diff(
     dayjs(status.train.origin.departurePlanned),
     "minute"
@@ -126,6 +129,7 @@ export async function createCheckInEmbed(status: TW_Status): Promise<{
     .setTitle(
       `${status.train.origin.name} ➔ ${status.train.destination.name} | ${status.train.lineName}`
     )
+    .setURL(`https://traewelling.de/status/${status.id}`)
     .setAuthor({
       name: user.display_name,
       iconURL: status.profilePicture,
@@ -140,23 +144,23 @@ export async function createCheckInEmbed(status: TW_Status): Promise<{
     .addFields([
       {
         name: "Distance",
-        value: `${(status.train.distance / 1000).toLocaleString("de-DE")} km`,
+        value: `${(status.train.distance / 1000).toLocaleString("de-DE", {
+          maximumFractionDigits: 2,
+        })} km`,
         inline: true,
       },
       {
         name: "Departure",
         value:
-          dayjs(status.train.origin.departurePlanned).format(
-            "DD.MM.YYYY HH:mm"
-          ) + (departureDelay > 0 ? ` (+${departureDelay} min)` : ""),
+          `<t:${plannedDeparture}:t>` +
+          (departureDelay > 0 ? ` (+${departureDelay} min)` : ""),
         inline: true,
       },
       {
         name: "Arrival",
         value:
-          dayjs(status.train.destination.arrivalPlanned).format(
-            "DD.MM.YYYY HH:mm"
-          ) + (arrivalDelay > 0 ? ` (+${arrivalDelay} min)` : ""),
+          `<t:${plannedArrival}:t>` +
+          (arrivalDelay > 0 ? ` (+${arrivalDelay} min)` : ""),
         inline: true,
       },
       {

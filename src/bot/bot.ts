@@ -11,13 +11,18 @@ import {
 import "dotenv/config";
 import { traewelling_cmd } from "./modules/traewelling/commands";
 import { register_cmd } from "./modules/general/commands";
-import { getUserByTraewellingId } from "../database/user";
+import {
+  checkTwUserInDatabase,
+  getUserByTraewellingId,
+} from "../database/user";
 import {
   checkServerInDatabase,
   getSendRelationsByUserId,
 } from "../database/server";
 import { createCheckInEmbed } from "./modules/traewelling";
 import { sendEmbedToChannel } from "./utils/sendEmbed";
+import { UserRow } from "../types/database";
+import { addCheckin, addCheckinRelation } from "../database/checkin";
 
 const client = new Client({
   intents: [
@@ -50,6 +55,53 @@ export const sendEmbedWithReactions = async (
   }
 };
 
+export async function sendTraewellingEmbed(
+  embed: EmbedBuilder,
+  user: UserRow,
+  message: string
+) {
+  // check for user in database
+  const userCheck = await checkTwUserInDatabase(user.id);
+  if (typeof userCheck === "boolean") {
+    return;
+  }
+
+  if (!user.dc_id) {
+    console.log("User has no discord id");
+    return;
+  }
+
+  // get all relations with the given user_id
+  const relations = await getSendRelationsByUserId(user.dc_id);
+  console.log(`User ${user.display_name} has ${relations.length} relations`);
+
+  // send the embed to all servers/channels
+  for (const relation of relations) {
+    // get channel
+    const server = await checkServerInDatabase(relation.server_id);
+    if (typeof server === "boolean") {
+      continue;
+    }
+
+    console.log(
+      `Sending to server ${relation.server_id} in channel ${server.channel_id}`
+    );
+    const guild = await client.guilds.fetch(relation.server_id);
+    const channel = await guild.channels.fetch(server.channel_id);
+
+    if (!channel) {
+      continue;
+    }
+
+    if (channel.type != ChannelType.GuildText) {
+      continue;
+    }
+    if (message == "") return await channel.send({ embeds: [embed] });
+
+    return await channel.send({ embeds: [embed], content: message });
+  }
+}
+
 export const sendCheckInEmbeds = async (status: TW_Status) => {
   // get all relations with the given user_id
   const user = await getUserByTraewellingId(status.user);
@@ -71,6 +123,10 @@ export const sendCheckInEmbeds = async (status: TW_Status) => {
   if (imageBuffer) {
     attachment = new AttachmentBuilder(imageBuffer).setName("route.png");
   }
+
+  // store checkin in db
+  await addCheckin(status);
+
   // send the embed to all servers/channels
   for (const relation of relations) {
     // get channel
@@ -114,7 +170,9 @@ export const sendCheckInEmbeds = async (status: TW_Status) => {
         break;
     }
     const msg = `<@${user.dc_id}> has posted a new check-in!`;
-    await sendEmbedToChannel(channel, embed, msg, attachment);
+    const msgObj = await sendEmbedToChannel(channel, embed, msg, attachment);
+
+    await addCheckinRelation(status.id, relation.server_id, msgObj.id);
   }
 };
 

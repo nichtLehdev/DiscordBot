@@ -98,35 +98,37 @@ type TW_Notification = {
   noticeFormatted: string;
   notice: string;
   link: string;
-  data: {
-    like: {
-      id: number;
-    };
-    status: {
-      id: number;
-    };
-    trip: {
-      origin: {
-        id: number;
-        ibnr: number;
-        name: string;
-      };
-      destination: {
-        id: number;
-        ibnr: number;
-        name: string;
-      };
-      plannedDeparture: string;
-      plannedArrival: string;
-      lineName: string;
-    };
-    liker: {
-      id: number;
-      username: string;
-      name: string;
-    };
-  };
+  data: TW_LikeData | null;
   readAt: string;
   createdAt: string;
   createdAtForHumans: string;
+};
+
+type TW_LikeData = {
+  like: {
+    id: number;
+  };
+  status: {
+    id: number;
+  };
+  trip: {
+    origin: {
+      id: number;
+      ibnr: number;
+      name: string;
+    };
+    destination: {
+      id: number;
+      ibnr: number;
+      name: string;
+    };
+    plannedDeparture: string;
+    plannedArrival: string;
+    lineName: string;
+  };
+  liker: {
+    id: number;
+    username: string;
+    name: string;
+  };
 };
