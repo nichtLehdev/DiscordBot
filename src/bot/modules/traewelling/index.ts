@@ -129,6 +129,7 @@ export async function createCheckInEmbed(status: TW_Status): Promise<{
     .setTitle(
       `${status.train.origin.name} ➔ ${status.train.destination.name} | ${status.train.lineName}`
     )
+    .setURL(`https://traewelling.de/status/${status.id}`)
     .setAuthor({
       name: user.display_name,
       iconURL: status.profilePicture,
