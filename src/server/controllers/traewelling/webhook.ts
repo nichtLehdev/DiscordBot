@@ -1,6 +1,7 @@
 import { Request, Response } from "express";
 import { createHmac } from "crypto";
 import {
+  deleteCheckInEmbeds,
   sendCheckInEmbeds,
   sendTraewellingEmbed,
   updateCheckInEmbeds,
@@ -171,6 +172,19 @@ export async function handleCheckinUpdate(status: TW_Status, res: Response) {
   return;
 }
 
+export async function handleCheckinDelete(status: TW_Status, res: Response) {
+  const user = await checkTwUserInDatabase(status.user);
+  if (typeof user === "boolean") {
+    res.status(404).send("User not found");
+    return;
+  }
+
+  // do something with the status
+  console.log("Delete Status ? for user ?", status.id, user.display_name);
+  await deleteCheckInEmbeds(status);
+  return;
+}
+
 export async function webhookReceived(req: Request, res: Response) {
   const body = req.body;
   const headers = req.headers;
@@ -195,6 +209,8 @@ export async function webhookReceived(req: Request, res: Response) {
     case "checkin_update":
       handleCheckinUpdate(body.status as TW_Status, res);
       break;
+    case "checkin_delete":
+
     default:
       console.log("Received webhook event: ", event);
       console.log("Body: ", body);
