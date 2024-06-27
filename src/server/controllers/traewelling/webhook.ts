@@ -108,6 +108,8 @@ async function handleNotification(
 
   switch (notification.type) {
     case "StatusLiked":
+      console.log("Likes Messages deprecated until further notice.");
+      /* 
       const data = notification.data as TW_LikeData;
       const liker = await checkTwUserInDatabase(data.liker.id);
       const embed = new EmbedBuilder()
@@ -143,10 +145,26 @@ async function handleNotification(
         }
       }
       await sendTraewellingEmbed(embed, user, "");
+      */
       break;
+    case "UserJoinedConnection":
+
     default:
       break;
   }
+}
+
+export async function handleCheckinUpdate(status: TW_Status, res: Response) {
+  const user = await checkTwUserInDatabase(status.user);
+  if (typeof user === "boolean") {
+    res.status(404).send("User not found");
+    return;
+  }
+
+  // do something with the status
+  console.log("Update Status ? for user ?", status.id, user.display_name);
+  await sendCheckInEmbeds(status);
+  return;
 }
 
 export async function webhookReceived(req: Request, res: Response) {
@@ -169,6 +187,9 @@ export async function webhookReceived(req: Request, res: Response) {
         headers["x-trwl-user-id"] as string,
         res
       );
+      break;
+    case "checkin_update":
+      handleCheckinUpdate(body.status as TW_Status, res);
       break;
     default:
       console.log("Received webhook event: ", event);
