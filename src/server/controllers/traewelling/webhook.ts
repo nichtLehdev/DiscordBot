@@ -173,6 +173,8 @@ export async function handleCheckinUpdate(status: TW_Status, res: Response) {
 }
 
 export async function handleCheckinDelete(status: TW_Status, res: Response) {
+  console.log(status);
+
   const user = await checkTwUserInDatabase(status.user);
   if (typeof user === "boolean") {
     res.status(404).send("User not found");
