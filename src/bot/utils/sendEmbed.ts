@@ -35,17 +35,15 @@ export async function sendEmbedToChannel(
 export async function editEmbedMessage(
   msg: Message,
   embed: EmbedBuilder,
-  message: string,
   attachment: AttachmentBuilder | null
 ) {
   console.log("Sending embed to channel");
   if (attachment) {
     return await msg.edit({
       embeds: [embed],
-      content: message,
       files: [attachment],
     });
   } else {
-    return await msg.edit({ embeds: [embed], content: message });
+    return await msg.edit({ embeds: [embed] });
   }
 }

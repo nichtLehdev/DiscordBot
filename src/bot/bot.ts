@@ -183,6 +183,16 @@ export const updateCheckInEmbeds = async (status: TW_Status) => {
     return;
   }
 
+  const user = await checkTwUserInDatabase(status.user);
+  if (typeof user === "boolean") {
+    return;
+  }
+
+  if (!user.dc_id) {
+    console.log("User has no discord id");
+    return;
+  }
+
   // get the check-in embed
   const { embed, imageBuffer } = await createCheckInEmbed(status);
   let attachment: AttachmentBuilder | null = null;
@@ -219,9 +229,7 @@ export const updateCheckInEmbeds = async (status: TW_Status) => {
     if (!fetchedMessage) {
       continue;
     }
-
-    const msg = `<@${status.user}> has updated their check-in!`;
-    await editEmbedMessage(fetchedMessage, embed, msg, attachment);
+    await editEmbedMessage(fetchedMessage, embed, attachment);
   }
 };
 
