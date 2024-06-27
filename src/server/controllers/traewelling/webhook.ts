@@ -108,6 +108,8 @@ async function handleNotification(
 
   switch (notification.type) {
     case "StatusLiked":
+      console.log("Likes Messages deprecated until further notice.");
+      /* 
       const data = notification.data as TW_LikeData;
       const liker = await checkTwUserInDatabase(data.liker.id);
       const embed = new EmbedBuilder()
@@ -143,7 +145,10 @@ async function handleNotification(
         }
       }
       await sendTraewellingEmbed(embed, user, "");
+      */
       break;
+    case "UserJoinedConnection":
+
     default:
       break;
   }
