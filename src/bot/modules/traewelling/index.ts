@@ -169,6 +169,11 @@ export async function createCheckInEmbed(status: TW_Status): Promise<{
         inline: true,
       },
       {
+        name: "Likes",
+        value: `${status.likes}`,
+        inline: true,
+      },
+      {
         name: "Points",
         value: `${status.train.points}`,
         inline: true,

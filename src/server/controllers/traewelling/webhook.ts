@@ -154,6 +154,19 @@ async function handleNotification(
   }
 }
 
+export async function handleCheckinUpdate(status: TW_Status, res: Response) {
+  const user = await checkTwUserInDatabase(status.user);
+  if (typeof user === "boolean") {
+    res.status(404).send("User not found");
+    return;
+  }
+
+  // do something with the status
+  console.log("Update Status ? for user ?", status.id, user.display_name);
+  await sendCheckInEmbeds(status);
+  return;
+}
+
 export async function webhookReceived(req: Request, res: Response) {
   const body = req.body;
   const headers = req.headers;
@@ -174,6 +187,9 @@ export async function webhookReceived(req: Request, res: Response) {
         headers["x-trwl-user-id"] as string,
         res
       );
+      break;
+    case "checkin_update":
+      handleCheckinUpdate(body.status as TW_Status, res);
       break;
     default:
       console.log("Received webhook event: ", event);
