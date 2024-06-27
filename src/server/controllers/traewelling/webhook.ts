@@ -1,6 +1,10 @@
 import { Request, Response } from "express";
 import { createHmac } from "crypto";
-import { sendCheckInEmbeds, sendTraewellingEmbed } from "../../../bot/bot";
+import {
+  sendCheckInEmbeds,
+  sendTraewellingEmbed,
+  updateCheckInEmbeds,
+} from "../../../bot/bot";
 import {
   checkTwUserInDatabase,
   getUserByTraewellingId,
@@ -163,7 +167,7 @@ export async function handleCheckinUpdate(status: TW_Status, res: Response) {
 
   // do something with the status
   console.log("Update Status ? for user ?", status.id, user.display_name);
-  await sendCheckInEmbeds(status);
+  await updateCheckInEmbeds(status);
   return;
 }
 
