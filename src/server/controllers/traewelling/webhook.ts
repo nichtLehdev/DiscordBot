@@ -210,6 +210,7 @@ export async function webhookReceived(req: Request, res: Response) {
       handleCheckinUpdate(body.status as TW_Status, res);
       break;
     case "checkin_delete":
+      handleCheckinDelete(body.status as TW_Status, res);
 
     default:
       console.log("Received webhook event: ", event);
