@@ -20,7 +20,12 @@ export async function traewelling_cmd(
 
   switch (subcommand) {
     case "profile":
-      await user(interaction);
+      const userId = interaction.options.getUser("user")?.id;
+      await user(
+        interaction,
+        userId ?? interaction.user.id,
+        userId == undefined ? true : false
+      );
       break;
     case "users":
       await users(interaction);
@@ -31,12 +36,16 @@ export async function traewelling_cmd(
   }
 }
 
-async function user(interaction: ChatInputCommandInteraction) {
-  const userExistsDc = await checkDiscordUserInDatabase(interaction.user.id);
+async function user(
+  interaction: ChatInputCommandInteraction,
+  userId: string,
+  self: boolean
+) {
+  const userExistsDc = await checkDiscordUserInDatabase(userId);
 
   if (userExistsDc) {
     //get the user from the database, then query the api for the user's data
-    const user = await getUserByDiscordId(interaction.user.id);
+    const user = await getUserByDiscordId(userId);
     if (!user) {
       await interaction.reply("Error: User not found in the database");
       return;
@@ -82,6 +91,13 @@ async function user(interaction: ChatInputCommandInteraction) {
     await interaction.reply({ embeds: [embed] });
     return;
   } else {
+    if (!self) {
+      await interaction.reply(
+        "User is not yet registered! You can't view this profile."
+      );
+      return;
+    }
+
     await interaction.reply(
       "Sorry, user not found in the database. Please register first. \nPlease check your DMs for more information."
     );

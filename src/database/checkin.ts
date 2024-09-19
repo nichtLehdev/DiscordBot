@@ -42,3 +42,11 @@ export async function addCheckinRelation(
   );
   await connection.end();
 }
+
+export async function deleteCheckinInDb(id: number) {
+  const connection = await getConnection();
+  await connection.execute("DELETE FROM traewelling_checkins WHERE id = ?", [
+    id,
+  ]);
+  await connection.end();
+}

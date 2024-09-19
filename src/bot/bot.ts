@@ -17,12 +17,17 @@ import {
 } from "../database/user";
 import {
   checkServerInDatabase,
+  getCheckinRelationsById,
   getSendRelationsByUserId,
 } from "../database/server";
 import { createCheckInEmbed } from "./modules/traewelling";
-import { sendEmbedToChannel } from "./utils/sendEmbed";
+import { editEmbedMessage, sendEmbedToChannel } from "./utils/sendEmbed";
 import { UserRow } from "../types/database";
-import { addCheckin, addCheckinRelation } from "../database/checkin";
+import {
+  addCheckin,
+  addCheckinRelation,
+  deleteCheckinInDb,
+} from "../database/checkin";
 
 const client = new Client({
   intents: [
@@ -173,6 +178,113 @@ export const sendCheckInEmbeds = async (status: TW_Status) => {
     const msgObj = await sendEmbedToChannel(channel, embed, msg, attachment);
 
     await addCheckinRelation(status.id, relation.server_id, msgObj.id);
+  }
+};
+
+export const updateCheckInEmbeds = async (status: TW_Status) => {
+  const messages = await getCheckinRelationsById(status.id);
+  if (messages.length == 0) {
+    return;
+  }
+
+  const user = await checkTwUserInDatabase(status.user);
+  if (typeof user === "boolean") {
+    return;
+  }
+
+  if (!user.dc_id) {
+    console.log("User has no discord id");
+    return;
+  }
+
+  // get the check-in embed
+  const { embed, imageBuffer } = await createCheckInEmbed(status);
+  let attachment: AttachmentBuilder | null = null;
+  if (imageBuffer) {
+    attachment = new AttachmentBuilder(imageBuffer).setName("route.png");
+  }
+
+  // update the embed in all servers/channels
+  for (const message of messages) {
+    const guild = await client.guilds.fetch(message.server_id);
+
+    if (!guild) {
+      continue;
+    }
+
+    const channel = await checkServerInDatabase(message.server_id);
+
+    if (typeof channel === "boolean") {
+      continue;
+    }
+    const chl = await guild.channels.fetch(channel.channel_id);
+    
+    if (!chl) {
+      continue;
+    }
+
+    if (chl.type != ChannelType.GuildText) {
+      continue;
+    }
+
+    // get the message
+    const fetchedMessage = await chl.messages.fetch(message.message_id);
+
+    if (!fetchedMessage) {
+      continue;
+    }
+    await editEmbedMessage(fetchedMessage, embed, attachment);
+  }
+};
+
+export const deleteCheckInEmbeds = async (status: TW_Status) => {
+  const messages = await getCheckinRelationsById(status.id);
+  if (messages.length == 0) {
+    return;
+  }
+
+  const user = await checkTwUserInDatabase(status.user);
+  if (typeof user === "boolean") {
+    return;
+  }
+
+  if (!user.dc_id) {
+    console.log("User has no discord id");
+    return;
+  }
+  // delete checkin in db
+  await deleteCheckinInDb(status.id);
+
+  // delete the embed in all servers/channels
+  for (const message of messages) {
+    const guild = await client.guilds.fetch(message.server_id);
+
+    if (!guild) {
+      continue;
+    }
+
+    const channel = await checkServerInDatabase(message.server_id);
+
+    if (typeof channel === "boolean") {
+      continue;
+    }
+    const chl = await guild.channels.fetch(channel.channel_id);
+
+    if (!chl) {
+      continue;
+    }
+
+    if (chl.type != ChannelType.GuildText) {
+      continue;
+    }
+
+    // get the message
+    const fetchedMessage = await chl.messages.fetch(message.message_id);
+
+    if (!fetchedMessage) {
+      continue;
+    }
+    fetchedMessage.delete();
   }
 };
 

@@ -10,7 +10,15 @@ const commands = [
     .addSubcommand((subcommand) =>
       subcommand
         .setName("profile")
-        .setDescription("Get your traewelling profile")
+        .setDescription("Get a traewelling profile")
+        .addUserOption((option) =>
+          option
+            .setName("user")
+            .setDescription(
+              "Choose the user you want to view the profile from. Leave empty for yourself"
+            )
+            .setRequired(false)
+        )
     )
     .addSubcommand((subcommand) =>
       subcommand
@@ -60,12 +68,8 @@ const commands = [
 const rest = new REST({ version: "10" }).setToken(process.env.DISCORD_TOKEN!);
 
 rest
-  .put(
-    Routes.applicationGuildCommands(
-      process.env.DISCORD_CLIENT_ID!,
-      process.env.DISCORD_DEV_GUILD!
-    ),
-    { body: commands }
-  )
+  .put(Routes.applicationCommands(process.env.DISCORD_CLIENT_ID!), {
+    body: commands,
+  })
   .then(() => console.log("Successfully registered guild commands."))
   .catch(console.error);

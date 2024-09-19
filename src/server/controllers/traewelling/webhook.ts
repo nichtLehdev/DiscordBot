@@ -1,6 +1,11 @@
 import { Request, Response } from "express";
 import { createHmac } from "crypto";
-import { sendCheckInEmbeds, sendTraewellingEmbed } from "../../../bot/bot";
+import {
+  deleteCheckInEmbeds,
+  sendCheckInEmbeds,
+  sendTraewellingEmbed,
+  updateCheckInEmbeds,
+} from "../../../bot/bot";
 import {
   checkTwUserInDatabase,
   getUserByTraewellingId,
@@ -108,6 +113,101 @@ async function handleNotification(
 
   switch (notification.type) {
     case "StatusLiked":
+      console.log("Likes Messages deprecated until further notice.");
+      /* 
+      const data = notification.data as TW_LikeData;
+      const liker = await checkTwUserInDatabase(data.liker.id);
+      const embed = new EmbedBuilder()
+        .setTitle(`New Like on a status of ${user.display_name}`)
+        .setColor("Yellow")
+        .setAuthor({
+          name: user.display_name,
+          iconURL: user.avatar_url,
+        })
+        .setTimestamp(dayjs(notification.createdAt).toDate())
+        .addFields([
+          {
+            name: "Trip",
+            value: `${data.trip.origin.name} ➔ ${data.trip.destination.name} | ${data.trip.lineName} of <@${user.dc_id}>`,
+          },
+        ])
+        .setFooter({
+          text: `Status #${data.status.id}`,
+          iconURL:
+            "https://traewelling.de/images/icons/touch-icon-ipad-retina.png",
+        });
+
+      if (typeof liker === "boolean") {
+        // liker is not in the database
+        if (notification.lead) {
+          embed.setDescription(notification.lead);
+        } else {
+          embed.setDescription("Someone liked your status");
+        }
+      } else {
+        if (liker.dc_id) {
+          embed.setDescription(`<@${liker.dc_id}> liked your status`);
+        }
+      }
+      await sendTraewellingEmbed(embed, user, "");
+      */
+      break;
+    case "UserJoinedConnection":
+
+    default:
+      break;
+  }
+}
+
+export async function handleCheckinUpdate(status: TW_Status, res: Response) {
+  const user = await checkTwUserInDatabase(status.user);
+  if (typeof user === "boolean") {
+    res.status(404).send("User not found");
+    return;
+  }
+
+  // do something with the status
+  console.log("Update Status ? for user ?", status.id, user.display_name);
+  await updateCheckInEmbeds(status);
+  return;
+}
+
+export async function handleCheckinDelete(status: TW_Status, res: Response) {
+  console.log(status);
+
+  const user = await checkTwUserInDatabase(status.user);
+  if (typeof user === "boolean") {
+    res.status(404).send("User not found");
+    return;
+  }
+
+  // do something with the status
+  console.log("Delete Status ? for user ?", status.id, user.display_name);
+  await deleteCheckInEmbeds(status);
+  return;
+}
+
+async function handleNotification(
+  notification: TW_Notification,
+  userId: string,
+  res: Response
+) {
+  if (!userId) {
+    res.status(400).send("Error: No user id found in headers"); // 400 Bad Request
+    return;
+  }
+
+  const user = await getUserByTraewellingId(parseInt(userId));
+  if (!user) {
+    res.status(404).send("Error: User not found in the database"); // 404 Not Found
+    return;
+  }
+
+  // do something with the notification
+  console.log("New Notification for user", user.display_name);
+
+  switch (notification.type) {
+    case "StatusLiked":
       const data = notification.data as TW_LikeData;
       const liker = await checkTwUserInDatabase(data.liker.id);
       const embed = new EmbedBuilder()
@@ -170,6 +270,11 @@ export async function webhookReceived(req: Request, res: Response) {
         res
       );
       break;
+    case "checkin_update":
+      handleCheckinUpdate(body.status as TW_Status, res);
+      break;
+    case "checkin_delete":
+      handleCheckinDelete(body.status as TW_Status, res);
     default:
       console.log("Received webhook event: ", event);
       console.log("Body: ", body);
