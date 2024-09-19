@@ -218,7 +218,7 @@ export const updateCheckInEmbeds = async (status: TW_Status) => {
       continue;
     }
     const chl = await guild.channels.fetch(channel.channel_id);
-
+    
     if (!chl) {
       continue;
     }
