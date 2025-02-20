@@ -48,6 +48,6 @@ export async function register_cmd(interaction: ChatInputCommandInteraction) {
   // Register the server
   addServerToDatabase(interaction.guildId!, channelId.id);
 
-  await interaction.reply("Registering the server...");
+  await interaction.reply("Server registered successfully!");
   return;
 }

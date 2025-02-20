@@ -31,6 +31,12 @@ const commands = [
         .setDescription("Set up checkin messages for you in this server.")
         .addBooleanOption((option) =>
           option
+            .setName("mention")
+            .setDescription("Whether to mention you in the check-in message")
+            .setRequired(true)
+        )
+        .addBooleanOption((option) =>
+          option
             .setName("send")
             .setDescription("Send the check-ins to the channel")
             .setRequired(true)

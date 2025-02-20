@@ -185,6 +185,7 @@ async function registerUser(interaction: ChatInputCommandInteraction) {
 
   // get options from the command
   const send = interaction.options.getBoolean("send", true);
+  const mention = interaction.options.getBoolean("mention", true);
   const unlisted = interaction.options.getBoolean("unlisted", false);
   const followers = interaction.options.getBoolean("followers-only", false);
   const pvt = interaction.options.getBoolean("private", false);
@@ -199,6 +200,7 @@ async function registerUser(interaction: ChatInputCommandInteraction) {
     // create a new relationship
     await createRelationInDatabase(user.dc_id!, server.server_id, {
       send,
+      mention,
       unlisted: unlisted || false,
       followers: followers || false,
       private: pvt || false,
@@ -208,6 +210,7 @@ async function registerUser(interaction: ChatInputCommandInteraction) {
     // update the relationship
     await updateRelationInDatabase(relationship.id, {
       send,
+      mention,
       unlisted: unlisted || relationship.unlisted,
       followers: followers || relationship.followers,
       pvt: pvt || relationship.private,

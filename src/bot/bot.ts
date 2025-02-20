@@ -174,7 +174,14 @@ export const sendCheckInEmbeds = async (status: TW_Status) => {
       default:
         break;
     }
-    const msg = `<@${user.dc_id}> has posted a new check-in!`;
+
+    let msg = "";
+    if (relation.mention) {
+      msg = `<@${user.dc_id}> has posted a new check-in!`;
+    } else {
+      msg = `${user.display_name} has posted a new check-in!`;
+    }
+
     const msgObj = await sendEmbedToChannel(channel, embed, msg, attachment);
 
     await addCheckinRelation(status.id, relation.server_id, msgObj.id);
@@ -218,7 +225,7 @@ export const updateCheckInEmbeds = async (status: TW_Status) => {
       continue;
     }
     const chl = await guild.channels.fetch(channel.channel_id);
-    
+
     if (!chl) {
       continue;
     }
