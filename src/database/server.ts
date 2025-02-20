@@ -77,6 +77,7 @@ export async function createRelationInDatabase(
   serverId: string,
   perms: {
     send: boolean;
+    mention: boolean;
     unlisted: boolean;
     followers: boolean;
     private: boolean;
@@ -93,7 +94,7 @@ export async function createRelationInDatabase(
   const connection = await getConnection();
 
   await connection.execute(
-    "INSERT INTO traewelling_user_server_relations (user_id, server_id, send, unlisted, followers, private) VALUES (?, ?, ?, ?, ?, ?)",
+    "INSERT INTO traewelling_user_server_relations (user_id, server_id, send, unlisted, followers, private, mention) VALUES (?, ?, ?, ?, ?, ?, ?)",
     [
       userId,
       serverId,
@@ -101,6 +102,7 @@ export async function createRelationInDatabase(
       perms.unlisted,
       perms.followers,
       perms.private,
+      perms.mention,
     ]
   );
 
@@ -111,6 +113,7 @@ export async function updateRelationInDatabase(
   id: number,
   perms: {
     send: boolean;
+    mention: boolean;
     unlisted: boolean;
     followers: boolean;
     pvt: boolean;
@@ -123,8 +126,8 @@ export async function updateRelationInDatabase(
 
   const connection = await getConnection();
   await connection.execute(
-    "UPDATE traewelling_user_server_relations SET send = ?, unlisted = ?, followers = ?, private = ? WHERE id = ?",
-    [perms.send, perms.unlisted, perms.followers, perms.pvt, id]
+    "UPDATE traewelling_user_server_relations SET send = ?, unlisted = ?, followers = ?, private = ?, mention = ? WHERE id = ?",
+    [perms.send, perms.unlisted, perms.followers, perms.pvt, perms.mention, id]
   );
 
   await connection.end();
