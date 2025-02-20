@@ -187,68 +187,6 @@ export async function handleCheckinDelete(status: TW_Status, res: Response) {
   return;
 }
 
-async function handleNotification(
-  notification: TW_Notification,
-  userId: string,
-  res: Response
-) {
-  if (!userId) {
-    res.status(400).send("Error: No user id found in headers"); // 400 Bad Request
-    return;
-  }
-
-  const user = await getUserByTraewellingId(parseInt(userId));
-  if (!user) {
-    res.status(404).send("Error: User not found in the database"); // 404 Not Found
-    return;
-  }
-
-  // do something with the notification
-  console.log("New Notification for user", user.display_name);
-
-  switch (notification.type) {
-    case "StatusLiked":
-      const data = notification.data as TW_LikeData;
-      const liker = await checkTwUserInDatabase(data.liker.id);
-      const embed = new EmbedBuilder()
-        .setTitle(`New Like on a status of ${user.display_name}`)
-        .setColor("Yellow")
-        .setAuthor({
-          name: user.display_name,
-          iconURL: user.avatar_url,
-        })
-        .setTimestamp(dayjs(notification.createdAt).toDate())
-        .addFields([
-          {
-            name: "Trip",
-            value: `${data.trip.origin.name} ➔ ${data.trip.destination.name} | ${data.trip.lineName} of <@${user.dc_id}>`,
-          },
-        ])
-        .setFooter({
-          text: `Status #${data.status.id}`,
-          iconURL:
-            "https://traewelling.de/images/icons/touch-icon-ipad-retina.png",
-        });
-
-      if (typeof liker === "boolean") {
-        // liker is not in the database
-        if (notification.lead) {
-          embed.setDescription(notification.lead);
-        } else {
-          embed.setDescription("Someone liked your status");
-        }
-      } else {
-        if (liker.dc_id) {
-          embed.setDescription(`<@${liker.dc_id}> liked your status`);
-        }
-      }
-      await sendTraewellingEmbed(embed, user, "");
-      break;
-    default:
-      break;
-  }
-}
-
 export async function webhookReceived(req: Request, res: Response) {
   const body = req.body;
   const headers = req.headers;
