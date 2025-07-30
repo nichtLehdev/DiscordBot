@@ -19,6 +19,7 @@ import {
   checkServerInDatabase,
   getCheckinRelationsById,
   getSendRelationsByUserId,
+  getServers,
 } from "../database/server";
 import { createCheckInEmbed } from "./modules/traewelling";
 import { editEmbedMessage, sendEmbedToChannel } from "./utils/sendEmbed";
@@ -43,6 +44,74 @@ const client = new Client({
 client.once("ready", () => {
   console.log(`Logged in as ${client.user?.tag}!`);
 });
+
+export const sendChangelogToServers = async (
+  changes: string[],
+  fixes: string[],
+  version: string,
+  github: string
+) => {
+  let changeSection = "**Changes:\n**";
+  let fixSection = "**Fixes:\n**";
+
+  for (const change of changes) {
+    changeSection += `• ${change}\n`;
+  }
+
+  for (const fix of fixes) {
+    fixSection += `• ${fix}\n`;
+  }
+
+  if (changes.length == 0) {
+    changeSection = "";
+  } else {
+    changeSection += "\n";
+  }
+
+  if (fixes.length == 0) {
+    fixSection = "";
+  }
+
+  const embed = new EmbedBuilder()
+    .setAuthor({
+      name: "nichtLehdev",
+      iconURL: "https://avatars.githubusercontent.com/u/87381979",
+      url: "https://github.com/nichtLehdev",
+    })
+    .setTitle(`Traewelling Bot v${version}`)
+    .setDescription(`${changeSection}${fixSection}`)
+    .setURL(github)
+    .setTimestamp()
+    .setColor("#008000");
+
+  // get all channels where bot is in
+  const channels = await getServers();
+
+  for (const channel of channels) {
+    try {
+      const guild = await client.guilds.fetch(channel.server_id);
+      if (!guild) {
+        continue;
+      }
+
+      const chl = await guild.channels.fetch(channel.channel_id);
+
+      if (!chl) {
+        continue;
+      }
+
+      if (chl.type != ChannelType.GuildText) {
+        continue;
+      }
+      await chl.send({ embeds: [embed] });
+      console.log(
+        `Sending to server ${channel.server_id} in channel ${channel.channel_id}`
+      );
+    } catch (error) {
+      console.error(error);
+    }
+  }
+};
 
 export const sendEmbedWithReactions = async (
   channelId: string,
@@ -109,7 +178,7 @@ export async function sendTraewellingEmbed(
 
 export const sendCheckInEmbeds = async (status: TW_Status) => {
   // get all relations with the given user_id
-  const user = await getUserByTraewellingId(status.user);
+  const user = await getUserByTraewellingId(status.userDetails.id);
   if (!user) {
     return;
   }
@@ -194,7 +263,7 @@ export const updateCheckInEmbeds = async (status: TW_Status) => {
     return;
   }
 
-  const user = await checkTwUserInDatabase(status.user);
+  const user = await checkTwUserInDatabase(status.userDetails.id);
   if (typeof user === "boolean") {
     return;
   }
@@ -250,7 +319,7 @@ export const deleteCheckInEmbeds = async (status: TW_Status) => {
     return;
   }
 
-  const user = await checkTwUserInDatabase(status.user);
+  const user = await checkTwUserInDatabase(status.userDetails.id);
   if (typeof user === "boolean") {
     return;
   }

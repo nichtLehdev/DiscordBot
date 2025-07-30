@@ -7,7 +7,7 @@ export async function addCheckin(status: TW_Status) {
 
   await connection.execute(query, [
     status.id,
-    status.user,
+    status.userDetails.id,
     status.train.origin.id,
     status.train.destination.id,
     status.train.origin.rilIdentifier,

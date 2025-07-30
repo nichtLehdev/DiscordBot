@@ -60,16 +60,12 @@ type TW_Event = {
 type TW_Status = {
   id: number;
   body: string;
-  user: number;
-  username: string;
-  preventIndex: boolean;
   business: number;
   visibility: number;
   likes: number;
   liked: boolean;
   isLikable: boolean;
   createdAt: string;
-  profilePicture: string;
   train: {
     trip: number;
     hafasId: string;
@@ -86,6 +82,14 @@ type TW_Status = {
       identifier: string;
       name: string;
     };
+  };
+  userDetails: {
+    id: number;
+    displayName: string;
+    username: string;
+    profilePicture: string;
+    mastodonUrl: null | string;
+    preventIndex: boolean;
   };
   event: Event | null;
 };

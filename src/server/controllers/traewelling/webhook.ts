@@ -80,7 +80,7 @@ async function validate(req: Request, res: Response) {
 }
 
 async function handleCheckinCreate(status: TW_Status, res: Response) {
-  const user = await checkTwUserInDatabase(status.user);
+  const user = await checkTwUserInDatabase(status.userDetails.id);
   if (typeof user === "boolean") {
     res.status(404).send("User not found");
     return;
@@ -160,7 +160,7 @@ async function handleNotification(
 }
 
 export async function handleCheckinUpdate(status: TW_Status, res: Response) {
-  const user = await checkTwUserInDatabase(status.user);
+  const user = await checkTwUserInDatabase(status.userDetails.id);
   if (typeof user === "boolean") {
     res.status(404).send("User not found");
     return;
@@ -175,7 +175,7 @@ export async function handleCheckinUpdate(status: TW_Status, res: Response) {
 export async function handleCheckinDelete(status: TW_Status, res: Response) {
   console.log(status);
 
-  const user = await checkTwUserInDatabase(status.user);
+  const user = await checkTwUserInDatabase(status.userDetails.id);
   if (typeof user === "boolean") {
     res.status(404).send("User not found");
     return;
