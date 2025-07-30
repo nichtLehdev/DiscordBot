@@ -106,7 +106,7 @@ export async function createCheckInEmbed(status: TW_Status): Promise<{
   imageBuffer: Buffer | null;
 }> {
   // get user from database
-  const user = await getUserByTraewellingId(status.user);
+  const user = await getUserByTraewellingId(status.userDetails.id);
   if (!user) {
     throw new Error("User not found in the database");
   }
@@ -132,8 +132,8 @@ export async function createCheckInEmbed(status: TW_Status): Promise<{
     .setURL(`https://traewelling.de/status/${status.id}`)
     .setAuthor({
       name: user.display_name,
-      iconURL: status.profilePicture,
-      url: `https://traewelling.de/@${status.username}`,
+      iconURL: status.userDetails.profilePicture,
+      url: `https://traewelling.de/@${status.userDetails.username}`,
     })
     .setFooter({
       text: `Status #${status.id}`,

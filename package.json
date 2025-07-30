@@ -1,10 +1,10 @@
 {
   "name": "travel-bot",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test-server": "npx tsc && node dist/server/server.js",
     "cmd-update": "npx tsc && node dist/bot/register_commands.js",
     "build": "npx tsc && docker build -t apibot ."
   },
