@@ -133,6 +133,15 @@ export async function updateRelationInDatabase(
   await connection.end();
 }
 
+export async function getServers() {
+  const connection = await getConnection();
+  const [rows] = await connection.execute<ServerRow[]>(
+    "SELECT * FROM traewelling_discord_servers"
+  );
+  await connection.end();
+  return rows;
+}
+
 export async function getSendRelationsByUserId(userId: string) {
   const connection = await getConnection();
   const [rows] = await connection.execute<UserServerRelationRow[]>(

@@ -1,10 +1,10 @@
 {
   "name": "travel-bot",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test-server": "npx tsc && node dist/server/server.js",
     "cmd-update": "npx tsc && node dist/bot/register_commands.js",
     "build": "npx tsc && docker build -t apibot ."
   },
@@ -12,20 +12,20 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "@discordjs/rest": "^2.2.0",
-    "@types/hafas-client": "^6.2.0",
-    "dayjs": "^1.11.10",
-    "discord.js": "^14.14.1",
-    "dotenv": "^16.4.5",
-    "express": "^4.19.2",
-    "mysql2": "^3.9.7",
+    "@discordjs/rest": "^2.4.3",
+    "@types/hafas-client": "^6.3.0",
+    "dayjs": "^1.11.13",
+    "discord.js": "^14.18.0",
+    "dotenv": "^16.4.7",
+    "express": "^4.21.2",
+    "mysql2": "^3.12.0",
     "staticmaps": "^1.13.1"
   },
   "devDependencies": {
     "@types/express": "^4.17.21",
-    "@types/node": "^20.12.7",
+    "@types/node": "^20.17.19",
     "@types/staticmaps": "^1.12.5",
     "ts-node": "^10.9.2",
-    "typescript": "^5.4.4"
+    "typescript": "^5.7.3"
   }
 }
